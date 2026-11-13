@@ -6,6 +6,9 @@ import type { Route } from './navigation'
 import { ChapterDetailPage } from './pages/ChapterDetailPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { QuestionEditorPage } from './pages/QuestionEditorPage'
+import { QuizPlayerPage } from './pages/QuizPlayerPage'
+import { QuizResultsPage } from './pages/QuizResultsPage'
+import { QuizSetupPage } from './pages/QuizSetupPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SubjectDetailPage } from './pages/SubjectDetailPage'
 import { SubjectsPage } from './pages/SubjectsPage'
@@ -90,6 +93,20 @@ export default function App() {
           questionId={route.questionId}
           onNavigate={setRoute}
         />
+      ) : null}
+      {route.name === 'quiz-setup' ? (
+        <QuizSetupPage
+          subjectId={route.subjectId}
+          mode={route.mode}
+          initialChapterId={route.chapterId}
+          onNavigate={setRoute}
+        />
+      ) : null}
+      {route.name === 'quiz-player' ? (
+        <QuizPlayerPage sessionId={route.sessionId} onNavigate={setRoute} />
+      ) : null}
+      {route.name === 'quiz-results' ? (
+        <QuizResultsPage sessionId={route.sessionId} onNavigate={setRoute} />
       ) : null}
       {route.name === 'settings' ? <SettingsPage /> : null}
     </AppShell>

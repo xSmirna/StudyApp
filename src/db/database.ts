@@ -1,5 +1,10 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type {
+  QuestionAttempt,
+  QuestionReviewState,
+  QuizSession,
+} from '../domain/quizTypes'
+import type {
   AppMetadata,
   Chapter,
   Option,
@@ -7,13 +12,16 @@ import type {
   Subject,
 } from '../domain/types'
 
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 export class StudyAppDatabase extends Dexie {
   subjects!: EntityTable<Subject, 'id'>
   chapters!: EntityTable<Chapter, 'id'>
   questions!: EntityTable<Question, 'id'>
   options!: EntityTable<Option, 'id'>
+  quizSessions!: EntityTable<QuizSession, 'id'>
+  questionAttempts!: EntityTable<QuestionAttempt, 'id'>
+  questionReviewStates!: EntityTable<QuestionReviewState, 'questionId'>
   appMetadata!: EntityTable<AppMetadata, 'key'>
 
   constructor(name = 'StudyApp') {
@@ -25,11 +33,22 @@ export class StudyAppDatabase extends Dexie {
       appMetadata: 'key',
     })
 
+    this.version(2).stores({
+      subjects: 'id, name, updatedAt',
+      chapters: 'id, subjectId, order, updatedAt, archivedAt',
+      questions: 'id, chapterId, type, difficulty, updatedAt, archivedAt',
+      options: 'id, questionId, order',
+      appMetadata: 'key',
+    })
+
     this.version(SCHEMA_VERSION).stores({
       subjects: 'id, name, updatedAt',
       chapters: 'id, subjectId, order, updatedAt, archivedAt',
       questions: 'id, chapterId, type, difficulty, updatedAt, archivedAt',
       options: 'id, questionId, order',
+      quizSessions: 'id, subjectId, status, startedAt, mode',
+      questionAttempts: 'id, sessionId, questionId, answeredAt, [sessionId+questionId]',
+      questionReviewStates: 'questionId, nextDueAt, lastOutcome',
       appMetadata: 'key',
     })
   }

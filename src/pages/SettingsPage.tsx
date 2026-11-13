@@ -129,6 +129,8 @@ export function SettingsPage() {
               <li>Chapters: {preview.chapterCount}</li>
               <li>Questions: {preview.questionCount}</li>
               <li>Options: {preview.optionCount}</li>
+              <li>Quiz sessions: {preview.quizSessionCount}</li>
+              <li>Attempts: {preview.attemptCount}</li>
             </ul>
 
             <fieldset className="option-fieldset">

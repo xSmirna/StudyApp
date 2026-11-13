@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { listSubjects } from '../db/repositories/subjects'
+import type { QuizSession } from '../domain/quizTypes'
 import type { Subject } from '../domain/types'
 import type { Route } from '../navigation'
+import {
+  discardQuizSession,
+  listInProgressSessions,
+} from '../services/quiz'
 import { toUserMessage } from '../services/errors'
 
 interface DashboardPageProps {
@@ -11,17 +17,32 @@ interface DashboardPageProps {
 
 export function DashboardPage({ onNavigate }: DashboardPageProps) {
   const [subjects, setSubjects] = useState<Subject[]>([])
+  const [inProgress, setInProgress] = useState<QuizSession[]>([])
+  const [pendingDiscard, setPendingDiscard] = useState<QuizSession | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+
+  async function refresh() {
+    const [items, sessions] = await Promise.all([
+      listSubjects(),
+      listInProgressSessions(),
+    ])
+    setSubjects(items)
+    setInProgress(sessions)
+  }
 
   useEffect(() => {
     let cancelled = false
 
     async function load() {
       try {
-        const items = await listSubjects()
+        const [items, sessions] = await Promise.all([
+          listSubjects(),
+          listInProgressSessions(),
+        ])
         if (!cancelled) {
           setSubjects(items)
+          setInProgress(sessions)
           setError(null)
         }
       } catch (err) {
@@ -41,6 +62,17 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
     }
   }, [])
 
+  async function confirmDiscard() {
+    if (!pendingDiscard) return
+    try {
+      await discardQuizSession(pendingDiscard.id)
+      setPendingDiscard(null)
+      await refresh()
+    } catch (err) {
+      setError(toUserMessage(err))
+    }
+  }
+
   return (
     <section className="page">
       <h1>Dashboard</h1>
@@ -49,6 +81,49 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
       </p>
 
       {error ? <ErrorBanner message={error} onDismiss={() => setError(null)} /> : null}
+
+      {inProgress.length > 0 ? (
+        <div className="panel">
+          <h2>Resume quiz</h2>
+          <p className="muted">
+            In-progress quizzes are kept until you resume or discard them.
+            Discarded quizzes are not counted as completed.
+          </p>
+          <ul className="entity-list">
+            {inProgress.map((session) => (
+              <li key={session.id} className="entity-row">
+                <div>
+                  <strong>{session.subjectNameSnapshot}</strong>
+                  <p className="muted">
+                    {session.mode.replaceAll('_', ' ')} · started{' '}
+                    {new Date(session.startedAt).toLocaleString()}
+                  </p>
+                </div>
+                <div className="row-actions">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onNavigate({
+                        name: 'quiz-player',
+                        sessionId: session.id,
+                      })
+                    }
+                  >
+                    Resume
+                  </button>
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() => setPendingDiscard(session)}
+                  >
+                    Discard
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="panel">
         <h2>Today</h2>
@@ -86,6 +161,16 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
           </ul>
         ) : null}
       </div>
+
+      {pendingDiscard ? (
+        <ConfirmDialog
+          title="Discard quiz?"
+          message="This in-progress quiz will be marked discarded and will not count as completed."
+          confirmLabel="Discard"
+          onConfirm={() => void confirmDiscard()}
+          onCancel={() => setPendingDiscard(null)}
+        />
+      ) : null}
     </section>
   )
 }

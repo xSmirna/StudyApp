@@ -1,4 +1,9 @@
 import type {
+  QuestionAttempt,
+  QuestionReviewState,
+  QuizSession,
+} from './quizTypes'
+import type {
   AppMetadata,
   Chapter,
   Option,
@@ -14,6 +19,9 @@ export type BackupData = {
   chapters: Chapter[]
   questions: Question[]
   options: Option[]
+  quizSessions: QuizSession[]
+  questionAttempts: QuestionAttempt[]
+  questionReviewStates: QuestionReviewState[]
   appMetadata: AppMetadata[]
 }
 
@@ -30,12 +38,12 @@ export type BackupPreview = {
   chapterCount: number
   questionCount: number
   optionCount: number
+  quizSessionCount: number
+  attemptCount: number
   exportedAt: string
   schemaVersion: number
   formatVersion: number
 }
-
-export type MergeStrategy = 'replace' | 'merge'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -43,6 +51,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isString(value: unknown): value is string {
   return typeof value === 'string'
+}
+
+function optionalArray(value: unknown): unknown[] {
+  if (value === undefined) {
+    return []
+  }
+  if (!Array.isArray(value)) {
+    throw new Error('Backup field that should be an array is invalid.')
+  }
+  return value
 }
 
 function requireArray(value: unknown, label: string): unknown[] {
@@ -160,6 +178,30 @@ function validateMetadata(value: unknown, index: number): AppMetadata {
   return { key: value.key, value: value.value }
 }
 
+function validateQuizSession(value: unknown, index: number): QuizSession {
+  if (!isRecord(value) || !isString(value.id) || !isString(value.subjectId)) {
+    throw new Error(`Quiz session at index ${index} is invalid.`)
+  }
+  return value as unknown as QuizSession
+}
+
+function validateAttempt(value: unknown, index: number): QuestionAttempt {
+  if (!isRecord(value) || !isString(value.id) || !isString(value.sessionId)) {
+    throw new Error(`Question attempt at index ${index} is invalid.`)
+  }
+  return value as unknown as QuestionAttempt
+}
+
+function validateReviewState(
+  value: unknown,
+  index: number,
+): QuestionReviewState {
+  if (!isRecord(value) || !isString(value.questionId)) {
+    throw new Error(`Review state at index ${index} is invalid.`)
+  }
+  return value as unknown as QuestionReviewState
+}
+
 export function parseAndValidateBackup(raw: unknown): StudyAppBackup {
   if (!isRecord(raw)) {
     throw new Error('Backup file must be a JSON object.')
@@ -194,6 +236,13 @@ export function parseAndValidateBackup(raw: unknown): StudyAppBackup {
     chapters: requireArray(raw.data.chapters, 'chapters').map(validateChapter),
     questions: requireArray(raw.data.questions, 'questions').map(validateQuestion),
     options: requireArray(raw.data.options, 'options').map(validateOption),
+    quizSessions: optionalArray(raw.data.quizSessions).map(validateQuizSession),
+    questionAttempts: optionalArray(raw.data.questionAttempts).map(
+      validateAttempt,
+    ),
+    questionReviewStates: optionalArray(raw.data.questionReviewStates).map(
+      validateReviewState,
+    ),
     appMetadata: requireArray(raw.data.appMetadata, 'appMetadata').map(
       validateMetadata,
     ),
@@ -214,6 +263,8 @@ export function previewBackup(backup: StudyAppBackup): BackupPreview {
     chapterCount: backup.data.chapters.length,
     questionCount: backup.data.questions.length,
     optionCount: backup.data.options.length,
+    quizSessionCount: backup.data.quizSessions.length,
+    attemptCount: backup.data.questionAttempts.length,
     exportedAt: backup.exportedAt,
     schemaVersion: backup.schemaVersion,
     formatVersion: backup.formatVersion,

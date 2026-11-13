@@ -181,18 +181,33 @@ export function ChapterDetailPage({
 
       <div className="panel-header">
         <h2>Questions ({filtered.length})</h2>
-        <button
-          type="button"
-          onClick={() =>
-            onNavigate({
-              name: 'question-new',
-              subjectId,
-              chapterId,
-            })
-          }
-        >
-          Add question
-        </button>
+        <div className="row-actions">
+          <button
+            type="button"
+            onClick={() =>
+              onNavigate({
+                name: 'quiz-setup',
+                subjectId,
+                mode: 'learn',
+                chapterId,
+              })
+            }
+          >
+            Learn chapter
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onNavigate({
+                name: 'question-new',
+                subjectId,
+                chapterId,
+              })
+            }
+          >
+            Add question
+          </button>
+        </div>
       </div>
 
       <div className="filter-bar">

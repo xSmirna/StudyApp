@@ -1,3 +1,5 @@
+import type { QuizMode } from './domain/quizTypes'
+
 export type Route =
   | { name: 'dashboard' }
   | { name: 'subjects' }
@@ -10,6 +12,14 @@ export type Route =
       chapterId: string
       questionId: string
     }
+  | {
+      name: 'quiz-setup'
+      subjectId: string
+      mode: QuizMode
+      chapterId?: string
+    }
+  | { name: 'quiz-player'; sessionId: string }
+  | { name: 'quiz-results'; sessionId: string }
   | { name: 'settings' }
 
 export function routeLabel(route: Route): string {
@@ -26,6 +36,12 @@ export function routeLabel(route: Route): string {
       return 'New question'
     case 'question-edit':
       return 'Edit question'
+    case 'quiz-setup':
+      return 'Quiz setup'
+    case 'quiz-player':
+      return 'Quiz'
+    case 'quiz-results':
+      return 'Results'
     case 'settings':
       return 'Settings'
   }

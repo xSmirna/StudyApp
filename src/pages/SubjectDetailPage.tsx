@@ -152,6 +152,48 @@ export function SubjectDetailPage({
 
       {error ? <ErrorBanner message={error} onDismiss={() => setError(null)} /> : null}
 
+      <div className="panel">
+        <h2>Start a quiz</h2>
+        <div className="row-actions">
+          <button
+            type="button"
+            onClick={() =>
+              onNavigate({
+                name: 'quiz-setup',
+                subjectId,
+                mode: 'revision',
+              })
+            }
+          >
+            Revision
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onNavigate({
+                name: 'quiz-setup',
+                subjectId,
+                mode: 'exam',
+              })
+            }
+          >
+            Exam simulation
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onNavigate({
+                name: 'quiz-setup',
+                subjectId,
+                mode: 'custom',
+              })
+            }
+          >
+            Custom session
+          </button>
+        </div>
+      </div>
+
       <form className="stack-form" onSubmit={handleCreate}>
         <h2>Add chapter</h2>
         <label htmlFor="new-chapter-name">Chapter name</label>

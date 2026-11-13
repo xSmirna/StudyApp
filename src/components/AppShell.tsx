@@ -13,7 +13,10 @@ export function AppShell({ route, onNavigate, children }: AppShellProps) {
     route.name === 'subject' ||
     route.name === 'chapter' ||
     route.name === 'question-new' ||
-    route.name === 'question-edit'
+    route.name === 'question-edit' ||
+    route.name === 'quiz-setup' ||
+    route.name === 'quiz-player' ||
+    route.name === 'quiz-results'
 
   return (
     <div className="app-shell">

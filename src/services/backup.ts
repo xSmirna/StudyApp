@@ -6,27 +6,38 @@ import {
   chooseNewerByUpdatedAt,
   parseAndValidateBackup,
   previewBackup,
+  type BackupData,
   type BackupPreview,
   type StudyAppBackup,
 } from '../domain/backup'
-import { nowIso } from '../domain/time'
 import type {
-  AppMetadata,
-  Chapter,
-  Option,
-  Question,
-  Subject,
-} from '../domain/types'
+  QuestionAttempt,
+  QuestionReviewState,
+  QuizSession,
+} from '../domain/quizTypes'
+import { nowIso } from '../domain/time'
+import type { AppMetadata, Option, Question } from '../domain/types'
 
 export async function collectBackupData(): Promise<StudyAppBackup> {
-  const [subjects, chapters, questions, options, appMetadata] =
-    await Promise.all([
-      db.subjects.toArray(),
-      db.chapters.toArray(),
-      db.questions.toArray(),
-      db.options.toArray(),
-      db.appMetadata.toArray(),
-    ])
+  const [
+    subjects,
+    chapters,
+    questions,
+    options,
+    quizSessions,
+    questionAttempts,
+    questionReviewStates,
+    appMetadata,
+  ] = await Promise.all([
+    db.subjects.toArray(),
+    db.chapters.toArray(),
+    db.questions.toArray(),
+    db.options.toArray(),
+    db.quizSessions.toArray(),
+    db.questionAttempts.toArray(),
+    db.questionReviewStates.toArray(),
+    db.appMetadata.toArray(),
+  ])
 
   return {
     formatVersion: BACKUP_FORMAT_VERSION,
@@ -38,6 +49,9 @@ export async function collectBackupData(): Promise<StudyAppBackup> {
       chapters,
       questions,
       options,
+      quizSessions,
+      questionAttempts,
+      questionReviewStates,
       appMetadata,
     },
   }
@@ -93,6 +107,65 @@ function mergeByUpdatedAt<T extends { id: string; updatedAt: string }>(
   return [...map.values()]
 }
 
+function mergeById<T extends { id: string }>(
+  localItems: T[],
+  incomingItems: T[],
+): T[] {
+  const map = new Map(localItems.map((item) => [item.id, item]))
+  for (const incoming of incomingItems) {
+    if (!map.has(incoming.id)) {
+      map.set(incoming.id, incoming)
+    }
+  }
+  return [...map.values()]
+}
+
+function mergeSessions(
+  localItems: QuizSession[],
+  incomingItems: QuizSession[],
+): QuizSession[] {
+  const map = new Map(localItems.map((item) => [item.id, item]))
+  for (const incoming of incomingItems) {
+    const local = map.get(incoming.id)
+    if (!local) {
+      map.set(incoming.id, incoming)
+      continue
+    }
+    if (local.status === 'in_progress' && incoming.status === 'completed') {
+      map.set(incoming.id, incoming)
+    } else if (
+      local.status === incoming.status &&
+      incoming.startedAt > local.startedAt
+    ) {
+      map.set(incoming.id, incoming)
+    }
+  }
+  return [...map.values()]
+}
+
+function mergeReviewStates(
+  localItems: QuestionReviewState[],
+  incomingItems: QuestionReviewState[],
+): QuestionReviewState[] {
+  const map = new Map(localItems.map((item) => [item.questionId, item]))
+  for (const incoming of incomingItems) {
+    const local = map.get(incoming.questionId)
+    if (!local) {
+      map.set(incoming.questionId, incoming)
+      continue
+    }
+    if (incoming.attemptCount > local.attemptCount) {
+      map.set(incoming.questionId, incoming)
+    } else if (
+      incoming.attemptCount === local.attemptCount &&
+      (incoming.lastAttemptAt ?? '') > (local.lastAttemptAt ?? '')
+    ) {
+      map.set(incoming.questionId, incoming)
+    }
+  }
+  return [...map.values()]
+}
+
 function mergeOptions(
   localOptions: Option[],
   incomingOptions: Option[],
@@ -122,8 +195,6 @@ function mergeOptions(
         mergedQuestion.updatedAt !== localQuestion.updatedAt ||
         mergedQuestion.updatedAt > (localQuestion.updatedAt ?? ''))
 
-    // If the merged question came from the backup (newer or new), prefer
-    // the backup option text/correctness for matching option IDs.
     if (incomingWon) {
       map.set(incoming.id, incoming)
     }
@@ -132,26 +203,28 @@ function mergeOptions(
   return [...map.values()]
 }
 
-async function writeAllTables(data: {
-  subjects: Subject[]
-  chapters: Chapter[]
-  questions: Question[]
-  options: Option[]
-  appMetadata: AppMetadata[]
-}): Promise<void> {
+async function writeAllTables(data: BackupData): Promise<void> {
   await db.transaction(
     'rw',
-    db.subjects,
-    db.chapters,
-    db.questions,
-    db.options,
-    db.appMetadata,
+    [
+      db.subjects,
+      db.chapters,
+      db.questions,
+      db.options,
+      db.quizSessions,
+      db.questionAttempts,
+      db.questionReviewStates,
+      db.appMetadata,
+    ],
     async () => {
       await Promise.all([
         db.subjects.clear(),
         db.chapters.clear(),
         db.questions.clear(),
         db.options.clear(),
+        db.quizSessions.clear(),
+        db.questionAttempts.clear(),
+        db.questionReviewStates.clear(),
         db.appMetadata.clear(),
       ])
 
@@ -159,6 +232,15 @@ async function writeAllTables(data: {
       if (data.chapters.length > 0) await db.chapters.bulkAdd(data.chapters)
       if (data.questions.length > 0) await db.questions.bulkAdd(data.questions)
       if (data.options.length > 0) await db.options.bulkAdd(data.options)
+      if (data.quizSessions.length > 0) {
+        await db.quizSessions.bulkAdd(data.quizSessions)
+      }
+      if (data.questionAttempts.length > 0) {
+        await db.questionAttempts.bulkAdd(data.questionAttempts)
+      }
+      if (data.questionReviewStates.length > 0) {
+        await db.questionReviewStates.bulkAdd(data.questionReviewStates)
+      }
       if (data.appMetadata.length > 0) {
         await db.appMetadata.bulkAdd(data.appMetadata)
       }
@@ -176,14 +258,25 @@ async function replaceAllFromBackup(backup: StudyAppBackup): Promise<void> {
 }
 
 async function smartMergeFromBackup(backup: StudyAppBackup): Promise<void> {
-  const [localSubjects, localChapters, localQuestions, localOptions, localMetadata] =
-    await Promise.all([
-      db.subjects.toArray(),
-      db.chapters.toArray(),
-      db.questions.toArray(),
-      db.options.toArray(),
-      db.appMetadata.toArray(),
-    ])
+  const [
+    localSubjects,
+    localChapters,
+    localQuestions,
+    localOptions,
+    localSessions,
+    localAttempts,
+    localReviews,
+    localMetadata,
+  ] = await Promise.all([
+    db.subjects.toArray(),
+    db.chapters.toArray(),
+    db.questions.toArray(),
+    db.options.toArray(),
+    db.quizSessions.toArray(),
+    db.questionAttempts.toArray(),
+    db.questionReviewStates.toArray(),
+    db.appMetadata.toArray(),
+  ])
 
   const subjects = mergeByUpdatedAt(localSubjects, backup.data.subjects)
   const chapters = mergeByUpdatedAt(localChapters, backup.data.chapters)
@@ -193,6 +286,15 @@ async function smartMergeFromBackup(backup: StudyAppBackup): Promise<void> {
     backup.data.options,
     localQuestions,
     questions,
+  )
+  const quizSessions = mergeSessions(localSessions, backup.data.quizSessions)
+  const questionAttempts = mergeById<QuestionAttempt>(
+    localAttempts,
+    backup.data.questionAttempts,
+  )
+  const questionReviewStates = mergeReviewStates(
+    localReviews,
+    backup.data.questionReviewStates,
   )
 
   const metadataMap = new Map(localMetadata.map((item) => [item.key, item]))
@@ -210,7 +312,10 @@ async function smartMergeFromBackup(backup: StudyAppBackup): Promise<void> {
     chapters,
     questions,
     options,
-    appMetadata: [...metadataMap.values()],
+    quizSessions,
+    questionAttempts,
+    questionReviewStates,
+    appMetadata: [...metadataMap.values()] as AppMetadata[],
   })
 }
 

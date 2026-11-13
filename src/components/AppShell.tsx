@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Route } from '../navigation'
+import { NetworkStatus } from './NetworkStatus'
 
 interface AppShellProps {
   route: Route
@@ -21,7 +22,10 @@ export function AppShell({ route, onNavigate, children }: AppShellProps) {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <p className="app-brand">Study App</p>
+        <div className="brand-block">
+          <p className="app-brand">Study App</p>
+          <NetworkStatus />
+        </div>
         <nav aria-label="Main">
           <button
             type="button"

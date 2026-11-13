@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Study App">
+  <rect width="512" height="512" rx="64" fill="#2f4f3e"/>
+  <rect x="96" y="112" width="320" height="288" rx="24" fill="#f7f5f0"/>
+  <rect x="144" y="176" width="224" height="24" rx="8" fill="#2f4f3e"/>
+  <rect x="144" y="232" width="180" height="24" rx="8" fill="#5c574e"/>
+  <rect x="144" y="288" width="200" height="24" rx="8" fill="#5c574e"/>
+</svg>

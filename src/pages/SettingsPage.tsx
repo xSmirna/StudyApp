@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ErrorBanner } from '../components/ErrorBanner'
+import { APP_VERSION } from '../config'
 import type { BackupPreview, StudyAppBackup } from '../domain/backup'
 import {
   downloadJsonFile,
@@ -9,6 +10,18 @@ import {
   restoreBackup,
 } from '../services/backup'
 import { toUserMessage } from '../services/errors'
+import {
+  getPersistenceStatus,
+  getStorageEstimate,
+  requestPersistentStorage,
+  type PersistenceStatus,
+  type StorageEstimateSummary,
+} from '../services/storage'
+import {
+  getPwaUpdateState,
+  subscribePwaUpdates,
+  type PwaUpdateController,
+} from '../services/pwaUpdate'
 
 export function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -21,6 +34,25 @@ export function SettingsPage() {
   const [strategy, setStrategy] = useState<'replace' | 'merge'>('merge')
   const [confirmReplace, setConfirmReplace] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [estimate, setEstimate] = useState<StorageEstimateSummary | null>(null)
+  const [persistence, setPersistence] = useState<PersistenceStatus | null>(null)
+  const [pwaState, setPwaState] = useState<PwaUpdateController>(
+    getPwaUpdateState(),
+  )
+
+  async function refreshStorage() {
+    const [nextEstimate, nextPersistence] = await Promise.all([
+      getStorageEstimate(),
+      getPersistenceStatus(),
+    ])
+    setEstimate(nextEstimate)
+    setPersistence(nextPersistence)
+  }
+
+  useEffect(() => {
+    void refreshStorage()
+    return subscribePwaUpdates(setPwaState)
+  }, [])
 
   async function handleExport() {
     setBusy(true)
@@ -72,6 +104,22 @@ export function SettingsPage() {
           ? 'Replace All completed. A safety backup was downloaded first.'
           : 'Smart Merge completed.',
       )
+      await refreshStorage()
+    } catch (err) {
+      setError(toUserMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handlePersistRequest() {
+    setBusy(true)
+    setError(null)
+    try {
+      const result = await requestPersistentStorage()
+      setPersistence(result)
+      setMessage(result.message)
+      await refreshStorage()
     } catch (err) {
       setError(toUserMessage(err))
     } finally {
@@ -84,11 +132,71 @@ export function SettingsPage() {
       <h1>Settings / Data</h1>
       <p className="muted">
         Export and import stay on this device. Exported JSON backups are not
-        password-encrypted — keep them somewhere private.
+        password-encrypted — keep them somewhere private. IndexedDB is not
+        inherently encrypted by this app.
       </p>
 
       {error ? <ErrorBanner message={error} onDismiss={() => setError(null)} /> : null}
       {message ? <p className="success-banner" role="status">{message}</p> : null}
+
+      <div className="panel">
+        <h2>App version</h2>
+        <ul className="plain-list">
+          <li>Version: {APP_VERSION}</li>
+          <li>
+            Update status:{' '}
+            {pwaState.needRefresh
+              ? 'Update available (see banner). Reloading does not wipe local data.'
+              : pwaState.offlineReady
+                ? 'Ready for offline use'
+                : 'Up to date / checking via service worker when installed'}
+          </li>
+        </ul>
+        {pwaState.needRefresh ? (
+          <button type="button" onClick={() => pwaState.applyUpdate()}>
+            Reload to apply update
+          </button>
+        ) : null}
+      </div>
+
+      <div className="panel">
+        <h2>Browser storage</h2>
+        <p className="muted">
+          Persistence is a request, not a guarantee. If denied or unsupported,
+          the app still works.
+        </p>
+        <ul className="plain-list">
+          <li>
+            Usage: {estimate?.usageLabel ?? '…'} / {estimate?.quotaLabel ?? '…'}{' '}
+            ({estimate?.percentLabel ?? '…'})
+          </li>
+          <li>
+            Persistent storage:{' '}
+            {persistence?.persisted === true
+              ? 'Granted'
+              : persistence?.persisted === false
+                ? 'Not granted'
+                : 'Unsupported / unknown'}
+          </li>
+        </ul>
+        <p className="muted">{persistence?.message}</p>
+        <div className="row-actions">
+          <button
+            type="button"
+            onClick={() => void handlePersistRequest()}
+            disabled={busy}
+          >
+            Request persistent storage
+          </button>
+          <button
+            type="button"
+            onClick={() => void refreshStorage()}
+            disabled={busy}
+          >
+            Refresh estimate
+          </button>
+        </div>
+      </div>
 
       <div className="panel">
         <h2>Export backup</h2>

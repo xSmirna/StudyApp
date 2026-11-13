@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AppShell } from './components/AppShell'
 import { ErrorBanner } from './components/ErrorBanner'
+import { UpdateBanner } from './components/UpdateBanner'
 import { ensureDatabaseReady } from './db/database'
 import type { Route } from './navigation'
 import { ChapterDetailPage } from './pages/ChapterDetailPage'
@@ -14,6 +15,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { SubjectDetailPage } from './pages/SubjectDetailPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import { toUserMessage } from './services/errors'
+import { registerPwaUpdates } from './services/pwaUpdate'
 import { studyTimeTracker } from './services/studyTimeTracker'
 
 export default function App() {
@@ -28,6 +30,7 @@ export default function App() {
       try {
         await ensureDatabaseReady()
         studyTimeTracker.start()
+        await registerPwaUpdates()
         if (!cancelled) {
           setReady(true)
         }
@@ -64,8 +67,11 @@ export default function App() {
     )
   }
 
+  const quizActive = route.name === 'quiz-player'
+
   return (
     <AppShell route={route} onNavigate={setRoute}>
+      <UpdateBanner quizActive={quizActive} />
       {route.name === 'dashboard' ? (
         <DashboardPage onNavigate={setRoute} />
       ) : null}

@@ -48,10 +48,50 @@ button {
   background: rgba(255, 255, 255, 0.7);
 }
 
+.brand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .app-brand {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
+}
+
+.network-status {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.network-status.online {
+  color: #1f4d38;
+}
+
+.network-status.offline {
+  color: #8a2f2f;
+}
+
+.update-banner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #2f4f3e;
+  background: #e7f2eb;
+}
+
+.update-banner.ready {
+  border-color: #5c574e;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.update-banner p {
+  margin: 0.35rem 0 0;
 }
 
 .app-header nav {

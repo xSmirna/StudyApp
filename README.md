@@ -33,4 +33,5 @@ npm run preview  # preview production build
 
 ## Stage status
 
-Stage 1: app shell, Dexie schema, subject/chapter CRUD, repository layer, Vitest setup.
+- Stage 1: app shell, Dexie schema, subject/chapter CRUD, repository layer, Vitest setup.
+- Stage 2: five question types, question CRUD/archive, chapter filters/search/pagination, JSON backup Replace All + Smart Merge.

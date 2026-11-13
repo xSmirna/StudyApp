@@ -8,6 +8,13 @@ interface AppShellProps {
 }
 
 export function AppShell({ route, onNavigate, children }: AppShellProps) {
+  const subjectsActive =
+    route.name === 'subjects' ||
+    route.name === 'subject' ||
+    route.name === 'chapter' ||
+    route.name === 'question-new' ||
+    route.name === 'question-edit'
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -22,14 +29,17 @@ export function AppShell({ route, onNavigate, children }: AppShellProps) {
           </button>
           <button
             type="button"
-            className={
-              route.name === 'subjects' || route.name === 'subject'
-                ? 'nav-active'
-                : undefined
-            }
+            className={subjectsActive ? 'nav-active' : undefined}
             onClick={() => onNavigate({ name: 'subjects' })}
           >
             Subjects
+          </button>
+          <button
+            type="button"
+            className={route.name === 'settings' ? 'nav-active' : undefined}
+            onClick={() => onNavigate({ name: 'settings' })}
+          >
+            Settings
           </button>
         </nav>
       </header>

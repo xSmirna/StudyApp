@@ -220,3 +220,64 @@ button.danger {
   white-space: nowrap;
   border: 0;
 }
+
+.filter-bar {
+  display: grid;
+  gap: 0.5rem 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  align-items: end;
+  margin: 1rem 0;
+}
+
+.filter-bar input,
+.filter-bar select,
+.stack-form select {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #b7ae9f;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.option-fieldset {
+  border: 1px solid #d7d0c4;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.option-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.option-row input[type='text'],
+.option-row input:not([type]) {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #b7ae9f;
+  border-radius: 4px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.success-banner {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid #2f4f3e;
+  background: #e7f2eb;
+  color: #1f4d38;
+}
+
+.import-preview {
+  margin-top: 1rem;
+}

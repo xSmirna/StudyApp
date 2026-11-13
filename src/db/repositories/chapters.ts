@@ -11,6 +11,7 @@ import {
 } from '../../domain/validation'
 import { db } from '../database'
 import { NotFoundError, ValidationError } from '../errors'
+import { deleteQuestionsForChapter } from './questions'
 
 export async function listChaptersBySubject(
   subjectId: string,
@@ -105,5 +106,6 @@ export async function deleteChapter(id: string): Promise<void> {
     throw new NotFoundError('Chapter', id)
   }
 
+  await deleteQuestionsForChapter(id)
   await db.chapters.delete(id)
 }

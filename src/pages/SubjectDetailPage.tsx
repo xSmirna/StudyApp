@@ -217,12 +217,36 @@ export function SubjectDetailPage({
             ) : (
               <>
                 <div>
-                  <strong>{chapter.name}</strong>
+                  <button
+                    type="button"
+                    className="linkish"
+                    onClick={() =>
+                      onNavigate({
+                        name: 'chapter',
+                        subjectId,
+                        chapterId: chapter.id,
+                      })
+                    }
+                  >
+                    {chapter.name}
+                  </button>
                   {chapter.description ? (
                     <p className="muted">{chapter.description}</p>
                   ) : null}
                 </div>
                 <div className="row-actions">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onNavigate({
+                        name: 'chapter',
+                        subjectId,
+                        chapterId: chapter.id,
+                      })
+                    }
+                  >
+                    Open
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -250,7 +274,7 @@ export function SubjectDetailPage({
       {pendingDelete ? (
         <ConfirmDialog
           title="Delete chapter?"
-          message={`Delete "${pendingDelete.name}"? Its questions will also be removed in later stages when questions exist.`}
+          message={`Delete "${pendingDelete.name}"? Its questions and options will also be deleted.`}
           onConfirm={() => void confirmDelete()}
           onCancel={() => setPendingDelete(null)}
         />

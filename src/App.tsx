@@ -3,7 +3,10 @@ import { AppShell } from './components/AppShell'
 import { ErrorBanner } from './components/ErrorBanner'
 import { ensureDatabaseReady } from './db/database'
 import type { Route } from './navigation'
+import { ChapterDetailPage } from './pages/ChapterDetailPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { QuestionEditorPage } from './pages/QuestionEditorPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { SubjectDetailPage } from './pages/SubjectDetailPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import { toUserMessage } from './services/errors'
@@ -66,6 +69,29 @@ export default function App() {
       {route.name === 'subject' ? (
         <SubjectDetailPage subjectId={route.subjectId} onNavigate={setRoute} />
       ) : null}
+      {route.name === 'chapter' ? (
+        <ChapterDetailPage
+          subjectId={route.subjectId}
+          chapterId={route.chapterId}
+          onNavigate={setRoute}
+        />
+      ) : null}
+      {route.name === 'question-new' ? (
+        <QuestionEditorPage
+          subjectId={route.subjectId}
+          chapterId={route.chapterId}
+          onNavigate={setRoute}
+        />
+      ) : null}
+      {route.name === 'question-edit' ? (
+        <QuestionEditorPage
+          subjectId={route.subjectId}
+          chapterId={route.chapterId}
+          questionId={route.questionId}
+          onNavigate={setRoute}
+        />
+      ) : null}
+      {route.name === 'settings' ? <SettingsPage /> : null}
     </AppShell>
   )
 }

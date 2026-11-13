@@ -8,6 +8,7 @@ import type {
 import { validateRequiredName } from '../../domain/validation'
 import { db } from '../database'
 import { NotFoundError, ValidationError } from '../errors'
+import { deleteQuestionsForSubject } from './questions'
 
 export async function listSubjects(): Promise<Subject[]> {
   const subjects = await db.subjects.toArray()
@@ -68,6 +69,7 @@ export async function deleteSubject(id: string): Promise<void> {
     throw new NotFoundError('Subject', id)
   }
 
+  await deleteQuestionsForSubject(id)
   await db.transaction('rw', db.subjects, db.chapters, async () => {
     await db.chapters.where('subjectId').equals(id).delete()
     await db.subjects.delete(id)

@@ -1,12 +1,32 @@
 :root {
-  color-scheme: light;
-  font-family: Georgia, 'Times New Roman', serif;
+  color-scheme: dark;
+
+  --realm-bg: #091928;
+  --realm-surface: #164c45;
+  --realm-teal: #22766b;
+  --realm-alt: #186a8f;
+  --realm-cyan: #12f3ff;
+  --realm-violet: #6d1abd;
+  --realm-gold: #e7de95;
+  --realm-burgundy: #711f47;
+  --realm-success: #93d41e;
+  --realm-error: #f6853d;
+  --realm-text: #ffffff;
+  --realm-text-secondary: #a7cce4;
+  --realm-border: rgba(167, 204, 228, 0.15);
+  --realm-radius: 18px;
+  --realm-radius-btn: 12px;
+  --realm-cyan-glow: 0 0 12px rgba(18, 243, 255, 0.25);
+  --realm-glass: rgba(22, 76, 69, 0.82);
+
+  font-family: Montserrat, system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #1c1c1c;
+  color: var(--realm-text-secondary);
   background:
-    radial-gradient(circle at top left, #e8f0ea 0, transparent 45%),
-    linear-gradient(180deg, #f7f5f0 0%, #efeae2 100%);
+    radial-gradient(circle at top left, rgba(34, 118, 107, 0.28) 0, transparent 48%),
+    radial-gradient(circle at bottom right, rgba(24, 106, 143, 0.18) 0, transparent 42%),
+    var(--realm-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -21,16 +41,26 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: transparent;
 }
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
+  color: inherit;
 }
 
 button {
   cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+.app-brand {
+  color: var(--realm-text);
 }
 
 .app-shell {
@@ -44,8 +74,9 @@ button {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #d7d0c4;
-  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid var(--realm-border);
+  background: var(--realm-glass);
+  backdrop-filter: blur(14px);
 }
 
 .brand-block {
@@ -66,11 +97,11 @@ button {
 }
 
 .network-status.online {
-  color: #1f4d38;
+  color: var(--realm-cyan);
 }
 
 .network-status.offline {
-  color: #8a2f2f;
+  color: var(--realm-error);
 }
 
 .update-banner {
@@ -81,22 +112,31 @@ button {
   align-items: flex-start;
   margin: 0 0 1rem;
   padding: 0.85rem 1rem;
-  border: 1px solid #2f4f3e;
-  background: #e7f2eb;
+  border: 1px solid rgba(18, 243, 255, 0.35);
+  border-radius: var(--realm-radius);
+  background: var(--realm-surface);
+  color: var(--realm-text-secondary);
+  box-shadow: var(--realm-cyan-glow);
 }
 
 .update-banner.ready {
-  border-color: #5c574e;
-  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(147, 212, 30, 0.35);
+  box-shadow: none;
+  background: rgba(34, 118, 107, 0.55);
 }
 
 .update-banner p {
   margin: 0.35rem 0 0;
 }
 
+.update-banner strong {
+  color: var(--realm-text);
+}
+
 .app-header nav {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .app-header button,
@@ -105,23 +145,52 @@ button {
 .stack-form button,
 .dialog-actions button,
 .panel-header button,
-.error-banner button {
-  border: 1px solid #b7ae9f;
-  background: #fff;
-  color: #1c1c1c;
-  padding: 0.4rem 0.75rem;
-  border-radius: 4px;
+.error-banner button,
+.update-banner button {
+  border: 1px solid var(--realm-border);
+  background: var(--realm-teal);
+  color: var(--realm-text);
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--realm-radius-btn);
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.app-header button:hover,
+.row-actions button:hover,
+.inline-form button:hover,
+.stack-form button:hover,
+.dialog-actions button:hover,
+.panel-header button:hover,
+.error-banner button:hover,
+.update-banner button:hover {
+  background: rgba(34, 118, 107, 0.85);
 }
 
 .app-header button.nav-active {
-  background: #2f4f3e;
-  border-color: #2f4f3e;
-  color: #fff;
+  background: var(--realm-cyan);
+  border-color: var(--realm-cyan);
+  color: var(--realm-bg);
+  font-weight: 600;
+  box-shadow: var(--realm-cyan-glow);
+}
+
+.app-header button.nav-active:hover {
+  background: var(--realm-cyan);
+  transform: translateY(-1px);
 }
 
 button.danger {
-  border-color: #8a2f2f;
-  color: #8a2f2f;
+  border-color: rgba(246, 133, 61, 0.55);
+  background: rgba(113, 31, 71, 0.35);
+  color: var(--realm-error);
+}
+
+button.danger:hover {
+  background: rgba(113, 31, 71, 0.55);
 }
 
 .app-main {
@@ -135,14 +204,15 @@ button.danger {
 }
 
 .muted {
-  color: #5c574e;
+  color: var(--realm-text-secondary);
 }
 
 .panel {
   margin-top: 1.25rem;
   padding: 1rem;
-  border: 1px solid #d7d0c4;
-  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--realm-border);
+  border-radius: var(--realm-radius);
+  background: var(--realm-surface);
 }
 
 .panel-header {
@@ -171,21 +241,26 @@ button.danger {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.75rem 0;
-  border-top: 1px solid #e0d9cd;
+  border-top: 1px solid var(--realm-border);
 }
 
 .row-actions {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .linkish {
   border: none;
   background: none;
   padding: 0;
-  color: #1f4d38;
+  color: var(--realm-cyan);
   text-decoration: underline;
   text-align: left;
+}
+
+.linkish:hover {
+  color: var(--realm-text);
 }
 
 .inline-form,
@@ -204,13 +279,38 @@ button.danger {
 
 .inline-form input,
 .stack-form input,
-.stack-form textarea {
+.stack-form textarea,
+.filter-bar input,
+.filter-bar select,
+.stack-form select,
+.option-row input[type='text'],
+.option-row input:not([type]) {
   min-width: 12rem;
   flex: 1;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid #b7ae9f;
-  border-radius: 4px;
-  background: #fff;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--realm-border);
+  border-radius: var(--realm-radius-btn);
+  background: rgba(9, 25, 40, 0.55);
+  color: var(--realm-text);
+}
+
+.inline-form input::placeholder,
+.stack-form input::placeholder,
+.stack-form textarea::placeholder,
+.filter-bar input::placeholder {
+  color: rgba(167, 204, 228, 0.65);
+}
+
+.inline-form input:focus,
+.stack-form input:focus,
+.stack-form textarea:focus,
+.filter-bar input:focus,
+.filter-bar select:focus,
+.stack-form select:focus,
+.option-row input:focus {
+  outline: 2px solid rgba(18, 243, 255, 0.55);
+  outline-offset: 1px;
+  border-color: var(--realm-cyan);
 }
 
 .error-banner {
@@ -220,26 +320,34 @@ button.danger {
   align-items: center;
   margin: 1rem 0;
   padding: 0.75rem 1rem;
-  border: 1px solid #8a2f2f;
-  background: #f8e8e8;
-  color: #5a1f1f;
+  border: 1px solid rgba(246, 133, 61, 0.55);
+  border-radius: var(--realm-radius);
+  background: rgba(113, 31, 71, 0.35);
+  color: var(--realm-text);
 }
 
 .dialog-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(9, 25, 40, 0.72);
   display: grid;
   place-items: center;
   padding: 1rem;
+  backdrop-filter: blur(6px);
 }
 
 .dialog {
   width: min(28rem, 100%);
-  background: #fff;
-  border: 1px solid #b7ae9f;
-  border-radius: 6px;
+  background: var(--realm-glass);
+  border: 1px solid var(--realm-border);
+  border-radius: var(--realm-radius);
   padding: 1rem 1.25rem;
+  backdrop-filter: blur(14px);
+  color: var(--realm-text-secondary);
+}
+
+.dialog h2 {
+  color: var(--realm-text);
 }
 
 .dialog-actions {
@@ -273,17 +381,21 @@ button.danger {
 .filter-bar select,
 .stack-form select {
   width: 100%;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid #b7ae9f;
-  border-radius: 4px;
-  background: #fff;
+  min-width: 0;
 }
 
 .option-fieldset {
-  border: 1px solid #d7d0c4;
+  border: 1px solid var(--realm-border);
+  border-radius: var(--realm-radius);
   padding: 0.75rem;
   display: grid;
   gap: 0.75rem;
+  background: rgba(34, 118, 107, 0.25);
+}
+
+.option-fieldset legend {
+  color: var(--realm-text);
+  padding: 0 0.35rem;
 }
 
 .option-row {
@@ -295,11 +407,7 @@ button.danger {
 
 .option-row input[type='text'],
 .option-row input:not([type]) {
-  flex: 1;
   min-width: 10rem;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid #b7ae9f;
-  border-radius: 4px;
 }
 
 .pagination {
@@ -313,11 +421,16 @@ button.danger {
 .success-banner {
   margin: 1rem 0;
   padding: 0.75rem 1rem;
-  border: 1px solid #2f4f3e;
-  background: #e7f2eb;
-  color: #1f4d38;
+  border: 1px solid rgba(147, 212, 30, 0.45);
+  border-radius: var(--realm-radius);
+  background: rgba(147, 212, 30, 0.12);
+  color: var(--realm-success);
 }
 
 .import-preview {
   margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--realm-border);
+  border-radius: var(--realm-radius);
+  background: rgba(34, 118, 107, 0.28);
 }

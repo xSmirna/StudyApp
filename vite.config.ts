@@ -24,8 +24,8 @@ export default defineConfig({
         short_name: 'Study App',
         description:
           'Local-first study and revision app. Your data stays in this browser.',
-        theme_color: '#2f4f3e',
-        background_color: '#f7f5f0',
+        theme_color: '#091928',
+        background_color: '#091928',
         display: 'standalone',
         start_url: '/StudyApp/',
         scope: '/StudyApp/',

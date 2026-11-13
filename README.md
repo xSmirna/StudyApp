@@ -36,3 +36,4 @@ npm run preview  # preview production build
 - Stage 1: app shell, Dexie schema, subject/chapter CRUD, repository layer, Vitest setup.
 - Stage 2: five question types, question CRUD/archive, chapter filters/search/pagination, JSON backup Replace All + Smart Merge.
 - Stage 3: Learn / Revision / Exam / Custom quizzes, stable-ID grading, keyboard shortcuts, resume/discard, Practice Incorrect.
+- Stage 4: spaced repetition (already wired into quizzes), productive study time, history/statistics, secret achievements.

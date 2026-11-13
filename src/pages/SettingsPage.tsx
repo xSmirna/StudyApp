@@ -131,6 +131,8 @@ export function SettingsPage() {
               <li>Options: {preview.optionCount}</li>
               <li>Quiz sessions: {preview.quizSessionCount}</li>
               <li>Attempts: {preview.attemptCount}</li>
+              <li>Study days: {preview.studyDayCount}</li>
+              <li>Achievements: {preview.achievementCount}</li>
             </ul>
 
             <fieldset className="option-fieldset">

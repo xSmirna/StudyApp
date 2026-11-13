@@ -11,6 +11,7 @@ import type {
 } from '../../domain/quizTypes'
 import { resolveAttemptOutcome } from '../../domain/quizTypes'
 import { gradeChoiceQuestion, gradeTrueFalse } from '../../domain/grading'
+import { evaluateAndStoreAchievements } from './achievements'
 import { applyReviewOutcome } from './reviewStates'
 import { db } from '../database'
 import { NotFoundError, ValidationError } from '../errors'
@@ -212,6 +213,7 @@ export async function completeQuizSession(sessionId: string): Promise<QuizSessio
     durationSeconds,
   }
   await db.quizSessions.put(updated)
+  await evaluateAndStoreAchievements()
   return updated
 }
 

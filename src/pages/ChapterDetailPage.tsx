@@ -28,6 +28,7 @@ import {
   QUESTION_TYPE_LABELS,
 } from '../domain/types'
 import type { Route } from '../navigation'
+import { getChapterProgress, type ProgressStats } from '../services/statistics'
 import { toUserMessage } from '../services/errors'
 
 interface ChapterDetailPageProps {
@@ -53,18 +54,22 @@ export function ChapterDetailPage({
   const [page, setPage] = useState(1)
   const [pendingArchive, setPendingArchive] = useState<Question | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Question | null>(null)
+  const [progress, setProgress] = useState<ProgressStats | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   async function refresh() {
-    const [nextSubject, nextChapter, nextQuestions] = await Promise.all([
-      getSubject(subjectId),
-      getChapter(chapterId),
-      listQuestionsByChapter(chapterId, { includeArchived: true }),
-    ])
+    const [nextSubject, nextChapter, nextQuestions, nextProgress] =
+      await Promise.all([
+        getSubject(subjectId),
+        getChapter(chapterId),
+        listQuestionsByChapter(chapterId, { includeArchived: true }),
+        getChapterProgress(chapterId),
+      ])
     setSubject(nextSubject ?? null)
     setChapter(nextChapter ?? null)
     setQuestions(nextQuestions)
+    setProgress(nextProgress)
   }
 
   useEffect(() => {
@@ -72,15 +77,18 @@ export function ChapterDetailPage({
 
     async function load() {
       try {
-        const [nextSubject, nextChapter, nextQuestions] = await Promise.all([
-          getSubject(subjectId),
-          getChapter(chapterId),
-          listQuestionsByChapter(chapterId, { includeArchived: true }),
-        ])
+        const [nextSubject, nextChapter, nextQuestions, nextProgress] =
+          await Promise.all([
+            getSubject(subjectId),
+            getChapter(chapterId),
+            listQuestionsByChapter(chapterId, { includeArchived: true }),
+            getChapterProgress(chapterId),
+          ])
         if (!cancelled) {
           setSubject(nextSubject ?? null)
           setChapter(nextChapter ?? null)
           setQuestions(nextQuestions)
+          setProgress(nextProgress)
           setError(null)
         }
       } catch (err) {
@@ -178,6 +186,20 @@ export function ChapterDetailPage({
       </p>
 
       {error ? <ErrorBanner message={error} onDismiss={() => setError(null)} /> : null}
+
+      {progress ? (
+        <div className="panel">
+          <h2>Chapter progress</h2>
+          <ul className="plain-list">
+            <li>
+              Attempted {progress.attemptedQuestions} of{' '}
+              {progress.activeQuestions} active questions
+            </li>
+            <li>Correct attempt records: {progress.correctAttempts}</li>
+            <li>Overdue for review: {progress.overdueQuestions}</li>
+          </ul>
+        </div>
+      ) : null}
 
       <div className="panel-header">
         <h2>Questions ({filtered.length})</h2>

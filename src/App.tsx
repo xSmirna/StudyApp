@@ -5,6 +5,7 @@ import { ensureDatabaseReady } from './db/database'
 import type { Route } from './navigation'
 import { ChapterDetailPage } from './pages/ChapterDetailPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { HistoryPage } from './pages/HistoryPage'
 import { QuestionEditorPage } from './pages/QuestionEditorPage'
 import { QuizPlayerPage } from './pages/QuizPlayerPage'
 import { QuizResultsPage } from './pages/QuizResultsPage'
@@ -13,6 +14,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { SubjectDetailPage } from './pages/SubjectDetailPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import { toUserMessage } from './services/errors'
+import { studyTimeTracker } from './services/studyTimeTracker'
 
 export default function App() {
   const [route, setRoute] = useState<Route>({ name: 'dashboard' })
@@ -25,6 +27,7 @@ export default function App() {
     async function boot() {
       try {
         await ensureDatabaseReady()
+        studyTimeTracker.start()
         if (!cancelled) {
           setReady(true)
         }
@@ -107,6 +110,9 @@ export default function App() {
       ) : null}
       {route.name === 'quiz-results' ? (
         <QuizResultsPage sessionId={route.sessionId} onNavigate={setRoute} />
+      ) : null}
+      {route.name === 'history' ? (
+        <HistoryPage onNavigate={setRoute} />
       ) : null}
       {route.name === 'settings' ? <SettingsPage /> : null}
     </AppShell>

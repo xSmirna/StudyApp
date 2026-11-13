@@ -39,6 +39,13 @@ export function AppShell({ route, onNavigate, children }: AppShellProps) {
           </button>
           <button
             type="button"
+            className={route.name === 'history' ? 'nav-active' : undefined}
+            onClick={() => onNavigate({ name: 'history' })}
+          >
+            History
+          </button>
+          <button
+            type="button"
             className={route.name === 'settings' ? 'nav-active' : undefined}
             onClick={() => onNavigate({ name: 'settings' })}
           >

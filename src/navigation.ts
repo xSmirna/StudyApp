@@ -20,6 +20,7 @@ export type Route =
     }
   | { name: 'quiz-player'; sessionId: string }
   | { name: 'quiz-results'; sessionId: string }
+  | { name: 'history' }
   | { name: 'settings' }
 
 export function routeLabel(route: Route): string {
@@ -42,6 +43,8 @@ export function routeLabel(route: Route): string {
       return 'Quiz'
     case 'quiz-results':
       return 'Results'
+    case 'history':
+      return 'History'
     case 'settings':
       return 'Settings'
   }

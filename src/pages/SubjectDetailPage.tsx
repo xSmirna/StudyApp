@@ -10,6 +10,7 @@ import {
 import { getSubject } from '../db/repositories/subjects'
 import type { Chapter, Subject } from '../domain/types'
 import type { Route } from '../navigation'
+import { getSubjectProgress, type ProgressStats } from '../services/statistics'
 import { toUserMessage } from '../services/errors'
 
 interface SubjectDetailPageProps {
@@ -29,16 +30,19 @@ export function SubjectDetailPage({
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [pendingDelete, setPendingDelete] = useState<Chapter | null>(null)
+  const [progress, setProgress] = useState<ProgressStats | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   async function refresh() {
-    const [nextSubject, nextChapters] = await Promise.all([
+    const [nextSubject, nextChapters, nextProgress] = await Promise.all([
       getSubject(subjectId),
       listChaptersBySubject(subjectId),
+      getSubjectProgress(subjectId),
     ])
     setSubject(nextSubject ?? null)
     setChapters(nextChapters)
+    setProgress(nextProgress)
   }
 
   useEffect(() => {
@@ -46,13 +50,15 @@ export function SubjectDetailPage({
 
     async function load() {
       try {
-        const [nextSubject, nextChapters] = await Promise.all([
+        const [nextSubject, nextChapters, nextProgress] = await Promise.all([
           getSubject(subjectId),
           listChaptersBySubject(subjectId),
+          getSubjectProgress(subjectId),
         ])
         if (!cancelled) {
           setSubject(nextSubject ?? null)
           setChapters(nextChapters)
+          setProgress(nextProgress)
           setError(null)
         }
       } catch (err) {
@@ -151,6 +157,20 @@ export function SubjectDetailPage({
       <p className="muted">Chapters and subject progress.</p>
 
       {error ? <ErrorBanner message={error} onDismiss={() => setError(null)} /> : null}
+
+      {progress ? (
+        <div className="panel">
+          <h2>Subject progress</h2>
+          <ul className="plain-list">
+            <li>
+              Attempted {progress.attemptedQuestions} of{' '}
+              {progress.activeQuestions} active questions
+            </li>
+            <li>Correct attempt records: {progress.correctAttempts}</li>
+            <li>Overdue for review: {progress.overdueQuestions}</li>
+          </ul>
+        </div>
+      ) : null}
 
       <div className="panel">
         <h2>Start a quiz</h2>

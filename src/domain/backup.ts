@@ -1,8 +1,10 @@
+import type { AchievementUnlock } from './achievements'
 import type {
   QuestionAttempt,
   QuestionReviewState,
   QuizSession,
 } from './quizTypes'
+import type { DailyStudyTime } from './studyTime'
 import type {
   AppMetadata,
   Chapter,
@@ -22,6 +24,8 @@ export type BackupData = {
   quizSessions: QuizSession[]
   questionAttempts: QuestionAttempt[]
   questionReviewStates: QuestionReviewState[]
+  dailyStudyTime: DailyStudyTime[]
+  achievementUnlocks: AchievementUnlock[]
   appMetadata: AppMetadata[]
 }
 
@@ -40,6 +44,8 @@ export type BackupPreview = {
   optionCount: number
   quizSessionCount: number
   attemptCount: number
+  studyDayCount: number
+  achievementCount: number
   exportedAt: string
   schemaVersion: number
   formatVersion: number
@@ -243,6 +249,33 @@ export function parseAndValidateBackup(raw: unknown): StudyAppBackup {
     questionReviewStates: optionalArray(raw.data.questionReviewStates).map(
       validateReviewState,
     ),
+    dailyStudyTime: optionalArray(raw.data.dailyStudyTime).map(
+      (value, index) => {
+        if (
+          !isRecord(value) ||
+          !isString(value.localDate) ||
+          typeof value.seconds !== 'number'
+        ) {
+          throw new Error(`Daily study time at index ${index} is invalid.`)
+        }
+        return { localDate: value.localDate, seconds: value.seconds }
+      },
+    ),
+    achievementUnlocks: optionalArray(raw.data.achievementUnlocks).map(
+      (value, index) => {
+        if (
+          !isRecord(value) ||
+          !isString(value.achievementId) ||
+          !isString(value.unlockedAt)
+        ) {
+          throw new Error(`Achievement unlock at index ${index} is invalid.`)
+        }
+        return {
+          achievementId: value.achievementId as AchievementUnlock['achievementId'],
+          unlockedAt: value.unlockedAt,
+        }
+      },
+    ),
     appMetadata: requireArray(raw.data.appMetadata, 'appMetadata').map(
       validateMetadata,
     ),
@@ -265,6 +298,8 @@ export function previewBackup(backup: StudyAppBackup): BackupPreview {
     optionCount: backup.data.options.length,
     quizSessionCount: backup.data.quizSessions.length,
     attemptCount: backup.data.questionAttempts.length,
+    studyDayCount: backup.data.dailyStudyTime.length,
+    achievementCount: backup.data.achievementUnlocks.length,
     exportedAt: backup.exportedAt,
     schemaVersion: backup.schemaVersion,
     formatVersion: backup.formatVersion,

@@ -10,11 +10,13 @@ import {
   type BackupPreview,
   type StudyAppBackup,
 } from '../domain/backup'
+import type { AchievementUnlock } from '../domain/achievements'
 import type {
   QuestionAttempt,
   QuestionReviewState,
   QuizSession,
 } from '../domain/quizTypes'
+import type { DailyStudyTime } from '../domain/studyTime'
 import { nowIso } from '../domain/time'
 import type { AppMetadata, Option, Question } from '../domain/types'
 
@@ -27,6 +29,8 @@ export async function collectBackupData(): Promise<StudyAppBackup> {
     quizSessions,
     questionAttempts,
     questionReviewStates,
+    dailyStudyTime,
+    achievementUnlocks,
     appMetadata,
   ] = await Promise.all([
     db.subjects.toArray(),
@@ -36,6 +40,8 @@ export async function collectBackupData(): Promise<StudyAppBackup> {
     db.quizSessions.toArray(),
     db.questionAttempts.toArray(),
     db.questionReviewStates.toArray(),
+    db.dailyStudyTime.toArray(),
+    db.achievementUnlocks.toArray(),
     db.appMetadata.toArray(),
   ])
 
@@ -52,6 +58,8 @@ export async function collectBackupData(): Promise<StudyAppBackup> {
       quizSessions,
       questionAttempts,
       questionReviewStates,
+      dailyStudyTime,
+      achievementUnlocks,
       appMetadata,
     },
   }
@@ -214,6 +222,8 @@ async function writeAllTables(data: BackupData): Promise<void> {
       db.quizSessions,
       db.questionAttempts,
       db.questionReviewStates,
+      db.dailyStudyTime,
+      db.achievementUnlocks,
       db.appMetadata,
     ],
     async () => {
@@ -225,6 +235,8 @@ async function writeAllTables(data: BackupData): Promise<void> {
         db.quizSessions.clear(),
         db.questionAttempts.clear(),
         db.questionReviewStates.clear(),
+        db.dailyStudyTime.clear(),
+        db.achievementUnlocks.clear(),
         db.appMetadata.clear(),
       ])
 
@@ -240,6 +252,12 @@ async function writeAllTables(data: BackupData): Promise<void> {
       }
       if (data.questionReviewStates.length > 0) {
         await db.questionReviewStates.bulkAdd(data.questionReviewStates)
+      }
+      if (data.dailyStudyTime.length > 0) {
+        await db.dailyStudyTime.bulkAdd(data.dailyStudyTime)
+      }
+      if (data.achievementUnlocks.length > 0) {
+        await db.achievementUnlocks.bulkAdd(data.achievementUnlocks)
       }
       if (data.appMetadata.length > 0) {
         await db.appMetadata.bulkAdd(data.appMetadata)
@@ -266,6 +284,8 @@ async function smartMergeFromBackup(backup: StudyAppBackup): Promise<void> {
     localSessions,
     localAttempts,
     localReviews,
+    localStudy,
+    localUnlocks,
     localMetadata,
   ] = await Promise.all([
     db.subjects.toArray(),
@@ -275,6 +295,8 @@ async function smartMergeFromBackup(backup: StudyAppBackup): Promise<void> {
     db.quizSessions.toArray(),
     db.questionAttempts.toArray(),
     db.questionReviewStates.toArray(),
+    db.dailyStudyTime.toArray(),
+    db.achievementUnlocks.toArray(),
     db.appMetadata.toArray(),
   ])
 
@@ -297,6 +319,28 @@ async function smartMergeFromBackup(backup: StudyAppBackup): Promise<void> {
     backup.data.questionReviewStates,
   )
 
+  const studyMap = new Map(localStudy.map((item) => [item.localDate, item]))
+  for (const incoming of backup.data.dailyStudyTime) {
+    const local = studyMap.get(incoming.localDate)
+    if (!local) {
+      studyMap.set(incoming.localDate, incoming)
+    } else {
+      studyMap.set(incoming.localDate, {
+        localDate: incoming.localDate,
+        seconds: Math.max(local.seconds, incoming.seconds),
+      })
+    }
+  }
+
+  const unlockMap = new Map(
+    localUnlocks.map((item) => [item.achievementId, item]),
+  )
+  for (const incoming of backup.data.achievementUnlocks) {
+    if (!unlockMap.has(incoming.achievementId)) {
+      unlockMap.set(incoming.achievementId, incoming)
+    }
+  }
+
   const metadataMap = new Map(localMetadata.map((item) => [item.key, item]))
   for (const incoming of backup.data.appMetadata) {
     if (incoming.key === 'schemaVersion') {
@@ -315,6 +359,8 @@ async function smartMergeFromBackup(backup: StudyAppBackup): Promise<void> {
     quizSessions,
     questionAttempts,
     questionReviewStates,
+    dailyStudyTime: [...studyMap.values()] as DailyStudyTime[],
+    achievementUnlocks: [...unlockMap.values()] as AchievementUnlock[],
     appMetadata: [...metadataMap.values()] as AppMetadata[],
   })
 }

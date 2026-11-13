@@ -67,3 +67,6 @@ Vite `base` is `/StudyApp/` for the project Pages URL.
 - Stage 3: Learn / Revision / Exam / Custom quizzes, stable-ID grading, keyboard shortcuts, resume/discard, Practice Incorrect.
 - Stage 4: spaced repetition, productive study time, history/statistics, secret achievements.
 - Stage 5: PWA/service worker, update notice, storage quota/persist, online/offline indicator, GitHub Pages Actions deploy.
+- Stage 6: release readiness — full test/build verification, strengthened backup recovery tests, finalized `RELEASE_REPORT.md`. Owner-verified clean-profile, PWA install, offline use, and zero data egress on Windows Chrome & Edge.
+
+See [RELEASE_REPORT.md](./RELEASE_REPORT.md) for the finalized v0.1.0 release report.

@@ -99,9 +99,6 @@ export function QuestionEditorPage({
         ← Back to chapter
       </button>
       <h1>{isEdit ? 'Edit question' : 'New question'}</h1>
-      <p className="muted">
-        Question text and answers support Unicode (including Greek and French).
-      </p>
 
       {error ? <ErrorBanner message={error} /> : null}
 

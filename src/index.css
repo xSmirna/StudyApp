@@ -315,8 +315,20 @@ button.danger:hover {
   margin-bottom: 0.5rem;
 }
 
-.page-title-row h1 {
+.page-title-row h1,
+.page-title-row .section-title {
   margin: 0;
+}
+
+.page-title-row .section-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--realm-text);
+}
+
+.entity-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
 }
 
 .cream-button {
@@ -449,16 +461,284 @@ button.danger:hover {
   gap: 1rem;
 }
 
+.subject-flow {
+  position: relative;
+  margin-bottom: 0.25rem;
+  z-index: 0;
+}
+
+.progress-quiz-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1.75rem;
+}
+
+.progress-chapters-connector {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.progress-chapters-path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.progress-chapters-stroke {
+  stroke: rgba(231, 222, 149, 0.38);
+  stroke-width: 1.15;
+  filter: drop-shadow(0 0 3px rgba(231, 222, 149, 0.22));
+  opacity: 0.9;
+  vector-effect: non-scaling-stroke;
+}
+
+.progress-chapters-dust {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  background-image:
+    radial-gradient(circle, rgba(231, 222, 149, 0.55) 0 0.7px, transparent 1.2px),
+    radial-gradient(circle, rgba(255, 246, 200, 0.4) 0 0.55px, transparent 1px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.35) 0 0.5px, transparent 0.95px),
+    radial-gradient(circle, rgba(255, 246, 200, 0.45) 0 0.6px, transparent 1.1px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.3) 0 0.45px, transparent 0.9px);
+  background-size: 6px 6px, 5px 5px, 4px 4px, 5px 5px, 4px 4px;
+  background-position:
+    10px 12%,
+    28px 34%,
+    6px 52%,
+    34px 68%,
+    16px 86%;
+  background-repeat: no-repeat;
+}
+
+.subject-flow .chapters-heading,
+.subject-flow .constellation-tree,
+.subject-flow .stack-form {
+  position: relative;
+  z-index: 1;
+}
+
+.progress-collapse-button,
+.panel-title-row .progress-collapse-button {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--realm-gold);
+}
+
+.progress-collapse-button:hover,
+.panel-title-row .progress-collapse-button:hover {
+  border: none !important;
+  box-shadow: none !important;
+  background: rgba(231, 222, 149, 0.08) !important;
+  color: #fff6c8;
+  transform: none;
+}
+
+.progress-quiz-row .progress-back-button {
+  flex-shrink: 0;
+  background: transparent;
+  border-color: var(--realm-gold);
+  color: var(--realm-gold);
+  box-shadow: var(--realm-gold-glow);
+}
+
+.progress-quiz-row .progress-back-button:hover {
+  background: rgba(231, 222, 149, 0.1);
+  color: #fff6c8;
+  border-color: #fff1b0;
+}
+
 .progress-quiz-panel {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(11rem, 0.85fr);
   align-items: center;
   gap: 1rem 1.25rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.progress-quiz-panel:not(:has(.start-quiz-button)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.progress-quiz-panel.is-collapsed {
+  align-items: center;
+}
+
+.progress-quiz-panel.is-collapsed .panel-title-row {
+  margin-bottom: 0;
 }
 
 .progress-quiz-main {
   min-width: 0;
 }
+
+.chapters-heading {
+  margin-top: 0;
+}
+
+.info-button-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.info-popover {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  z-index: 5;
+  width: min(18rem, 70vw);
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--realm-radius-btn);
+  border: 1px solid rgba(231, 222, 149, 0.35);
+  background: rgba(4, 13, 22, 0.95);
+  color: var(--realm-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  box-shadow: var(--realm-gold-glow);
+}
+
+.filter-panel {
+  margin-top: 0.85rem;
+}
+
+.filter-panel .filter-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.filter-panel .filter-search {
+  flex: 1 1 auto;
+  min-width: 8rem;
+  width: auto;
+}
+
+.filter-select {
+  border-color: rgba(147, 212, 30, 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(24, 85, 77, 0.92) 0%,
+    rgba(13, 47, 42, 0.95) 100%
+  );
+  color: #cfe9d8;
+  color-scheme: dark;
+}
+
+.filter-select:focus {
+  outline: 2px solid rgba(147, 212, 30, 0.45);
+  outline-offset: 1px;
+  border-color: rgba(147, 212, 30, 0.65);
+}
+
+.filter-select option {
+  background: var(--realm-surface);
+  color: var(--realm-text);
+}
+
+.filter-panel .filter-select {
+  flex: 0 1 9.5rem;
+  width: auto;
+  min-width: 7.5rem;
+  max-width: 11rem;
+}
+
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+  color: var(--realm-text-secondary);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.filter-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.filter-toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 2.1rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  border: 1px solid rgba(167, 204, 228, 0.55);
+  background: rgba(24, 106, 143, 0.28);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.filter-toggle-thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: calc(1.15rem - 4px);
+  height: calc(1.15rem - 4px);
+  border-radius: 50%;
+  background: var(--realm-text-secondary);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.filter-toggle:has(input:checked) {
+  color: var(--realm-gold);
+}
+
+.filter-toggle input:checked + .filter-toggle-track {
+  background: rgba(231, 222, 149, 0.18);
+  border-color: var(--realm-gold);
+}
+
+.filter-toggle input:checked + .filter-toggle-track .filter-toggle-thumb {
+  transform: translateX(0.9rem);
+  background: var(--realm-gold);
+}
+
+.filter-toggle input:focus-visible + .filter-toggle-track {
+  outline: 2px solid rgba(18, 243, 255, 0.55);
+  outline-offset: 1px;
+}
+
+@media (max-width: 720px) {
+  .filter-panel .filter-bar {
+    flex-wrap: wrap;
+  }
+
+  .filter-panel .filter-search {
+    flex: 1 1 100%;
+  }
+
+  .filter-panel .filter-select {
+    flex: 1 1 calc(50% - 0.3rem);
+    max-width: none;
+  }
+}
+
 
 .progress-quiz-panel .start-quiz-button {
   justify-self: center;
@@ -1015,6 +1295,103 @@ button.danger:hover {
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1rem;
+}
+
+.question-editor-dialog {
+  width: min(40rem, 100%);
+  max-height: min(90vh, 52rem);
+  overflow: auto;
+  z-index: 2;
+  padding: 1.15rem 1.35rem 1.35rem;
+}
+
+.question-editor-dialog-header {
+  margin-bottom: 0.35rem;
+}
+
+.question-editor-dialog .stack-form {
+  margin-top: 0.35rem;
+}
+
+.question-editor-form .field-label {
+  color: inherit;
+}
+
+.difficulty-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.difficulty-tag {
+  appearance: none;
+  border: 1px solid rgba(167, 204, 228, 0.4);
+  border-radius: 999px;
+  background: rgba(24, 106, 143, 0.22);
+  color: var(--realm-text-secondary);
+  padding: 0.35rem 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.difficulty-tag:hover {
+  border-color: rgba(231, 222, 149, 0.45);
+  color: #fff6c8;
+}
+
+.difficulty-tag.is-selected {
+  border-color: var(--realm-gold);
+  background: rgba(231, 222, 149, 0.16);
+  color: var(--realm-gold);
+  box-shadow: var(--realm-gold-glow);
+}
+
+.option-row .option-correct {
+  white-space: nowrap;
+}
+
+.option-row .option-delete-button {
+  flex-shrink: 0;
+  border-color: rgba(246, 133, 61, 0.55);
+  color: var(--realm-error);
+  box-shadow: none;
+}
+
+.option-row .option-delete-button:hover:not(:disabled) {
+  background: rgba(113, 31, 71, 0.4);
+  border-color: var(--realm-error);
+  color: #ffd0b0;
+}
+
+.option-row .option-delete-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.question-editor-dialog .row-actions button {
+  border: 1px solid var(--realm-gold);
+  border-radius: var(--realm-radius-btn);
+  background: transparent;
+  color: var(--realm-gold);
+  padding: 0.45rem 0.85rem;
+  box-shadow: var(--realm-gold-glow);
+  cursor: pointer;
+}
+
+.question-editor-dialog .row-actions button:hover:not(:disabled) {
+  background: rgba(231, 222, 149, 0.1);
+  color: #fff6c8;
+  border-color: #fff1b0;
+}
+
+.question-editor-dialog .row-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .sr-only {

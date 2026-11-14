@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 
 type CreamButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
@@ -6,20 +6,23 @@ type CreamButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   iconOnly?: boolean
 }
 
-export function CreamButton({
-  children,
-  className,
-  iconOnly = false,
-  type = 'button',
-  ...rest
-}: CreamButtonProps) {
-  const classes = ['cream-button', iconOnly ? 'cream-button-icon' : '', className]
-    .filter(Boolean)
-    .join(' ')
+export const CreamButton = forwardRef<HTMLButtonElement, CreamButtonProps>(
+  function CreamButton(
+    { children, className, iconOnly = false, type = 'button', ...rest },
+    ref,
+  ) {
+    const classes = [
+      'cream-button',
+      iconOnly ? 'cream-button-icon' : '',
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ')
 
-  return (
-    <button type={type} className={classes} {...rest}>
-      {children}
-    </button>
-  )
-}
+    return (
+      <button ref={ref} type={type} className={classes} {...rest}>
+        {children}
+      </button>
+    )
+  },
+)

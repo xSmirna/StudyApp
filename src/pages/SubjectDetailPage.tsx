@@ -51,7 +51,7 @@ export function SubjectDetailPage({
   const [editDescription, setEditDescription] = useState('')
   const [pendingDelete, setPendingDelete] = useState<Chapter | null>(null)
   const [progress, setProgress] = useState<ProgressStats | null>(null)
-  const [progressCollapsed, setProgressCollapsed] = useState(false)
+  const [progressCollapsed, setProgressCollapsed] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [trailPath, setTrailPath] = useState<string>('')
@@ -537,7 +537,13 @@ export function SubjectDetailPage({
                     ) : (
                       <>
                         <div>
-                          <span className="entity-title">{chapter.name}</span>
+                          <span
+                            className="entity-title"
+                            data-full-title={chapter.name}
+                            title={chapter.name}
+                          >
+                            {chapter.name}
+                          </span>
                           {chapter.description ? (
                             <p className="muted entity-subtitle">
                               {chapter.description}

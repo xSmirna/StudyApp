@@ -132,6 +132,23 @@ function validateQuestion(value: unknown, index: number): Question {
   ) {
     throw new Error(`Question at index ${index} is missing required fields.`)
   }
+  const gaps = Array.isArray(value.gaps)
+    ? value.gaps.filter((item): item is string => isString(item))
+    : undefined
+  const table =
+    isRecord(value.table) &&
+    Array.isArray(value.table.headers) &&
+    Array.isArray(value.table.rows) &&
+    value.table.headers.every((item) => isString(item)) &&
+    value.table.rows.every(
+      (row) => Array.isArray(row) && row.every((cell) => isString(cell)),
+    )
+      ? {
+          headers: value.table.headers as string[],
+          rows: value.table.rows as string[][],
+        }
+      : undefined
+
   return {
     id: value.id,
     chapterId: value.chapterId,
@@ -146,6 +163,8 @@ function validateQuestion(value: unknown, index: number): Question {
       typeof value.correctBoolean === 'boolean'
         ? value.correctBoolean
         : undefined,
+    gaps: gaps && gaps.length > 0 ? gaps : undefined,
+    table,
     createdAt: value.createdAt,
     updatedAt: value.updatedAt,
     archivedAt: isString(value.archivedAt) ? value.archivedAt : undefined,

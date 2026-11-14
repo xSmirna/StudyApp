@@ -893,6 +893,8 @@ button.danger:hover {
   position: relative;
   margin-top: 0.35rem;
   padding-left: 2.1rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .constellation-spine {
@@ -968,19 +970,35 @@ button.danger:hover {
   margin-top: 0.75rem;
   padding: 0.35rem 0.15rem;
   list-style: none;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .subject-item {
   position: relative;
   list-style: none;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .subject-list .subject-row {
   position: relative;
+  flex-wrap: nowrap;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 0.9rem 1rem;
   margin: 0;
   border-top: none;
+  overflow: hidden;
+}
+
+.subject-list .subject-row .row-actions {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  margin-left: auto;
 }
 
 .constellation-branch {
@@ -1177,6 +1195,41 @@ button.danger:hover {
   transition: color 0.2s ease;
 }
 
+/* List cards: truncate inside available width; never grow the card for long titles */
+.subject-card .entity-title,
+.subject-row .entity-title {
+  display: block;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.subject-card > .entity-title,
+.subject-row > .entity-title {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.subject-card > div:has(.entity-title),
+.subject-row > div:has(.entity-title) {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.subject-card .entity-subtitle,
+.subject-row .entity-subtitle {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.subject-list .constellation-node {
+  flex: 0 0 auto;
+}
+
 .row-actions .icon-action {
   display: inline-grid;
   place-items: center;
@@ -1311,6 +1364,14 @@ button.danger:hover {
 
 .question-editor-dialog .stack-form {
   margin-top: 0.35rem;
+}
+
+.question-editor-header {
+  margin-bottom: 1rem;
+}
+
+.question-editor-header .panel-inline-title {
+  margin: 0;
 }
 
 .question-editor-form .field-label {
@@ -1978,10 +2039,96 @@ button.danger:hover {
   color: var(--realm-success);
 }
 
+.warning-banner {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(246, 133, 61, 0.55);
+  border-radius: var(--realm-radius);
+  background: rgba(246, 133, 61, 0.14);
+  color: var(--realm-error);
+}
+
 .import-preview {
   margin-top: 1rem;
   padding: 1rem;
   border: 1px solid var(--realm-border);
   border-radius: var(--realm-radius);
   background: rgba(24, 85, 77, 0.28);
+}
+
+.gap-fill-composer,
+.gap-fill-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gap-fill-hint {
+  margin: 0;
+}
+
+.gap-answer-index {
+  font-family: ui-monospace, monospace;
+  color: var(--realm-gold);
+  min-width: 2.5rem;
+}
+
+.gap-fill-prompt {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.25rem;
+  line-height: 1.7;
+}
+
+.gap-fill-prompt input {
+  min-width: 6rem;
+  width: auto;
+  flex: 0 1 8rem;
+}
+
+.gap-fill-answer-hint {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+}
+
+.table-fill-editor .table-fill-toolbar {
+  margin-bottom: 0.75rem;
+}
+
+.table-fill-scroll {
+  overflow-x: auto;
+}
+
+.table-fill-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-fill-grid th,
+.table-fill-grid td {
+  padding: 0.35rem;
+  border: 1px solid var(--realm-border);
+  vertical-align: middle;
+}
+
+.table-fill-grid th {
+  background: rgba(24, 85, 77, 0.45);
+}
+
+.table-fill-grid input {
+  width: 100%;
+  min-width: 5.5rem;
+}
+
+.table-fill-grid .is-blank-cell {
+  background: rgba(4, 13, 22, 0.35);
+}
+
+.table-fill-correct-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--realm-success);
 }

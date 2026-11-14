@@ -7,6 +7,7 @@ import type {
   QuestionInput,
   QuestionType,
   QuestionWithOptions,
+  TableFillData,
 } from '../../domain/types'
 import {
   ALL_DIFFICULTIES,
@@ -14,8 +15,12 @@ import {
   DIFFICULTY_LABELS,
   QUESTION_TYPE_LABELS,
   isChoiceType,
+  isGapFillType,
+  isTableFillType,
   isWrittenType,
 } from '../../domain/types'
+import { GapFillComposer } from './GapFillComposer'
+import { TableFillEditor, createEmptyTable } from './TableFillEditor'
 
 type DraftOption = OptionInput & { id: string }
 
@@ -55,6 +60,10 @@ export function QuestionEditorForm({
   const [correctBoolean, setCorrectBoolean] = useState<boolean>(
     initial?.correctBoolean ?? true,
   )
+  const [gaps, setGaps] = useState<string[]>(initial?.gaps ?? [])
+  const [table, setTable] = useState<TableFillData>(
+    initial?.table ?? createEmptyTable(),
+  )
   const [options, setOptions] = useState<DraftOption[]>(
     initial?.options?.length
       ? initial.options.map((option, index) => ({
@@ -81,6 +90,12 @@ export function QuestionEditorForm({
           isCorrect: index === (firstCorrect >= 0 ? firstCorrect : 0),
         }))
       })
+    }
+    if (isTableFillType(nextType) && !initial?.table && table.rows.length === 0) {
+      setTable(createEmptyTable())
+    }
+    if (isTableFillType(nextType) && !text.trim()) {
+      setText('Complete the table')
     }
   }
 
@@ -135,6 +150,8 @@ export function QuestionEditorForm({
         referenceAnswer,
         explanation,
         correctBoolean,
+        gaps: isGapFillType(type) ? gaps : undefined,
+        table: isTableFillType(type) ? table : undefined,
         options: isChoiceType(type) ? options : [],
       })
     } catch (err) {
@@ -195,13 +212,24 @@ export function QuestionEditorForm({
         ))}
       </div>
 
-      <label htmlFor="question-text">Question text</label>
-      <textarea
-        id="question-text"
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-        rows={4}
-      />
+      {isGapFillType(type) ? (
+        <GapFillComposer
+          text={text}
+          gaps={gaps}
+          onTextChange={setText}
+          onGapsChange={setGaps}
+        />
+      ) : (
+        <>
+          <label htmlFor="question-text">Question text</label>
+          <textarea
+            id="question-text"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            rows={4}
+          />
+        </>
+      )}
 
       {type === 'true_false' ? (
         <fieldset className="option-fieldset">
@@ -237,6 +265,10 @@ export function QuestionEditorForm({
             rows={type === 'long_answer' ? 6 : 3}
           />
         </>
+      ) : null}
+
+      {isTableFillType(type) ? (
+        <TableFillEditor table={table} onChange={setTable} />
       ) : null}
 
       {isChoiceType(type) ? (

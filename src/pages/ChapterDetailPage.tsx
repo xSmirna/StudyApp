@@ -74,7 +74,7 @@ export function ChapterDetailPage({
   const [pendingDelete, setPendingDelete] = useState<Question | null>(null)
   const [creatingQuestion, setCreatingQuestion] = useState(false)
   const [progress, setProgress] = useState<ProgressStats | null>(null)
-  const [progressCollapsed, setProgressCollapsed] = useState(false)
+  const [progressCollapsed, setProgressCollapsed] = useState(true)
   const [infoOpen, setInfoOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -534,7 +534,13 @@ export function ChapterDetailPage({
                 >
                   <span className="constellation-node" aria-hidden="true" />
                   <div>
-                    <span className="entity-title">{question.text}</span>
+                    <span
+                      className="entity-title"
+                      data-full-title={question.text}
+                      title={question.text}
+                    >
+                      {question.text}
+                    </span>
                     <p className="muted entity-subtitle">
                       {QUESTION_TYPE_LABELS[question.type]} ·{' '}
                       {DIFFICULTY_LABELS[question.difficulty]}

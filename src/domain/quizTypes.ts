@@ -3,6 +3,7 @@ import type {
   EntityId,
   IsoDateTime,
   QuestionType,
+  TableFillData,
 } from './types'
 
 export type QuizMode =
@@ -82,6 +83,8 @@ export type QuizQuestionPayload = {
   referenceAnswer?: string
   explanation?: string
   correctBoolean?: boolean
+  gaps?: string[]
+  table?: TableFillData
   options: Array<{
     id: EntityId
     text: string

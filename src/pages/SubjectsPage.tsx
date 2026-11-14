@@ -271,7 +271,13 @@ export function SubjectsPage({ onNavigate }: SubjectsPageProps) {
                       </div>
                     ) : (
                       <>
-                        <span className="entity-title">{subject.name}</span>
+                        <span
+                          className="entity-title"
+                          data-full-title={subject.name}
+                          title={subject.name}
+                        >
+                          {subject.name}
+                        </span>
                         <div
                           className="row-actions"
                           onClick={(event) => event.stopPropagation()}

@@ -9,7 +9,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ route, onNavigate, children }: AppShellProps) {
-  const subjectsActive =
+  const studyActive =
     route.name === 'subjects' ||
     route.name === 'subject' ||
     route.name === 'chapter' ||
@@ -19,6 +19,10 @@ export function AppShell({ route, onNavigate, children }: AppShellProps) {
     route.name === 'quiz-player' ||
     route.name === 'quiz-results'
 
+  const profileActive = route.name === 'dashboard'
+  const historyActive = route.name === 'history'
+  const settingsActive = route.name === 'settings'
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -26,36 +30,50 @@ export function AppShell({ route, onNavigate, children }: AppShellProps) {
           <p className="app-brand">Study App</p>
           <NetworkStatus />
         </div>
-        <nav aria-label="Main">
+
+        <div className="header-center">
+          <nav className="main-tabs" aria-label="Main" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={studyActive}
+              className={studyActive ? 'tab-active' : undefined}
+              onClick={() => onNavigate({ name: 'subjects' })}
+            >
+              Study
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={profileActive}
+              className={profileActive ? 'tab-active' : undefined}
+              onClick={() => onNavigate({ name: 'dashboard' })}
+            >
+              Profile
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={historyActive}
+              className={historyActive ? 'tab-active' : undefined}
+              onClick={() => onNavigate({ name: 'history' })}
+            >
+              History
+            </button>
+          </nav>
+
           <button
             type="button"
-            className={route.name === 'dashboard' ? 'nav-active' : undefined}
-            onClick={() => onNavigate({ name: 'dashboard' })}
-          >
-            Dashboard
-          </button>
-          <button
-            type="button"
-            className={subjectsActive ? 'nav-active' : undefined}
-            onClick={() => onNavigate({ name: 'subjects' })}
-          >
-            Subjects
-          </button>
-          <button
-            type="button"
-            className={route.name === 'history' ? 'nav-active' : undefined}
-            onClick={() => onNavigate({ name: 'history' })}
-          >
-            History
-          </button>
-          <button
-            type="button"
-            className={route.name === 'settings' ? 'nav-active' : undefined}
+            className={
+              settingsActive
+                ? 'settings-nav-button nav-active'
+                : 'settings-nav-button'
+            }
             onClick={() => onNavigate({ name: 'settings' })}
           >
             Settings
           </button>
-        </nav>
+        </div>
       </header>
       <main className="app-main">{children}</main>
     </div>

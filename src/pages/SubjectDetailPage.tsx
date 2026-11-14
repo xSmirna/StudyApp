@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { CreamButton } from '../components/CreamButton'
 import { ErrorBanner } from '../components/ErrorBanner'
 import {
   createChapter,
@@ -144,77 +145,65 @@ export function SubjectDetailPage({
     )
   }
 
+  const progressTitle = `${subject.name} progress`
+
   return (
     <section className="page">
-      <button
-        type="button"
-        className="linkish"
-        onClick={() => onNavigate({ name: 'subjects' })}
-      >
-        ← Back to subjects
-      </button>
-      <h1>{subject.name}</h1>
-      <p className="muted">Chapters and subject progress.</p>
-
       {error ? <ErrorBanner message={error} onDismiss={() => setError(null)} /> : null}
 
-      {progress ? (
-        <div className="panel">
-          <h2>Subject progress</h2>
-          <ul className="plain-list">
-            <li>
-              Attempted {progress.attemptedQuestions} of{' '}
-              {progress.activeQuestions} active questions
-            </li>
-            <li>Correct attempt records: {progress.correctAttempts}</li>
-            <li>Overdue for review: {progress.overdueQuestions}</li>
-          </ul>
+      <div className="panel grove-panel progress-quiz-panel">
+        <div className="progress-quiz-main">
+          <div className="panel-title-row">
+            <CreamButton
+              iconOnly
+              aria-label="Back to subjects"
+              title="Back to subjects"
+              onClick={() => onNavigate({ name: 'subjects' })}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  fill="currentColor"
+                  d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                />
+              </svg>
+            </CreamButton>
+            <h1 className="panel-inline-title">{progressTitle}</h1>
+          </div>
+          {progress ? (
+            <ul className="plain-list">
+              <li>
+                Attempted {progress.attemptedQuestions} of{' '}
+                {progress.activeQuestions} active questions
+              </li>
+              <li>Correct attempt records: {progress.correctAttempts}</li>
+              <li>Overdue for review: {progress.overdueQuestions}</li>
+            </ul>
+          ) : (
+            <p className="muted">Loading progress…</p>
+          )}
         </div>
-      ) : null}
 
-      <div className="panel">
-        <h2>Start a quiz</h2>
-        <div className="row-actions">
-          <button
-            type="button"
-            onClick={() =>
-              onNavigate({
-                name: 'quiz-setup',
-                subjectId,
-                mode: 'revision',
-              })
-            }
-          >
-            Revision
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              onNavigate({
-                name: 'quiz-setup',
-                subjectId,
-                mode: 'exam',
-              })
-            }
-          >
-            Exam simulation
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              onNavigate({
-                name: 'quiz-setup',
-                subjectId,
-                mode: 'custom',
-              })
-            }
-          >
-            Custom session
-          </button>
-        </div>
+        <CreamButton
+          className="start-quiz-button"
+          onClick={() =>
+            onNavigate({
+              name: 'quiz-setup',
+              subjectId,
+              mode: 'custom',
+            })
+          }
+        >
+          Start a quiz
+        </CreamButton>
       </div>
 
-      <form className="stack-form" onSubmit={handleCreate}>
+      <form className="stack-form panel grove-panel" onSubmit={handleCreate}>
         <h2>Add chapter</h2>
         <label htmlFor="new-chapter-name">Chapter name</label>
         <input

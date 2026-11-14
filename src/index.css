@@ -1,9 +1,10 @@
 :root {
   color-scheme: dark;
 
-  --realm-bg: #091928;
-  --realm-surface: #164c45;
-  --realm-teal: #22766b;
+  /* Darker off-guide variants of the guide midnight / emerald greens */
+  --realm-bg: #040d16;
+  --realm-surface: #0d2f2a;
+  --realm-teal: #18554d;
   --realm-alt: #186a8f;
   --realm-cyan: #12f3ff;
   --realm-violet: #6d1abd;
@@ -17,16 +18,14 @@
   --realm-radius: 18px;
   --realm-radius-btn: 12px;
   --realm-cyan-glow: 0 0 12px rgba(18, 243, 255, 0.25);
-  --realm-glass: rgba(22, 76, 69, 0.82);
+  --realm-gold-glow: 0 0 12px rgba(231, 222, 149, 0.25);
+  --realm-glass: rgba(13, 47, 42, 0.82);
 
   font-family: Montserrat, system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: var(--realm-text-secondary);
-  background:
-    radial-gradient(circle at top left, rgba(34, 118, 107, 0.28) 0, transparent 48%),
-    radial-gradient(circle at bottom right, rgba(24, 106, 143, 0.18) 0, transparent 42%),
-    var(--realm-bg);
+  background: var(--realm-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -68,21 +67,38 @@ h3,
 }
 
 .app-header {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--realm-border);
-  background: var(--realm-glass);
-  backdrop-filter: blur(14px);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(13, 47, 42, 0.55) 0%,
+      rgba(24, 85, 77, 0.22) 45%,
+      rgba(4, 13, 22, 0) 100%
+    ),
+    var(--realm-bg);
+  backdrop-filter: none;
 }
 
 .brand-block {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  justify-self: start;
+}
+
+.header-center {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem 1.25rem;
+  justify-self: center;
+  grid-column: 2;
 }
 
 .app-brand {
@@ -122,7 +138,7 @@ h3,
 .update-banner.ready {
   border-color: rgba(147, 212, 30, 0.35);
   box-shadow: none;
-  background: rgba(34, 118, 107, 0.55);
+  background: rgba(24, 85, 77, 0.55);
 }
 
 .update-banner p {
@@ -133,13 +149,101 @@ h3,
   color: var(--realm-text);
 }
 
-.app-header nav {
+.main-tabs {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.35rem;
   flex-wrap: wrap;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: rgba(4, 13, 22, 0.35);
+  border: 1px solid var(--realm-border);
 }
 
-.app-header button,
+.main-tabs button {
+  border: none;
+  background: transparent;
+  color: var(--realm-text-secondary);
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    font-size 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.main-tabs button:hover {
+  color: var(--realm-text);
+  background: rgba(24, 85, 77, 0.35);
+}
+
+.main-tabs button.tab-active {
+  color: var(--realm-text);
+  background: var(--realm-teal);
+  font-size: 1.12rem;
+  font-weight: 700;
+  box-shadow:
+    0 0 0 1px rgba(147, 212, 30, 0.18),
+    0 0 10px rgba(147, 212, 30, 0.16),
+    0 0 18px rgba(147, 212, 30, 0.08);
+  animation: tab-glow-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes tab-glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(147, 212, 30, 0.14),
+      0 0 8px rgba(147, 212, 30, 0.12),
+      0 0 16px rgba(147, 212, 30, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(147, 212, 30, 0.26),
+      0 0 12px rgba(147, 212, 30, 0.22),
+      0 0 22px rgba(147, 212, 30, 0.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-tabs button.tab-active {
+    animation: none;
+  }
+}
+
+.settings-nav-button {
+  border: 1px solid var(--realm-border);
+  background: var(--realm-teal);
+  color: var(--realm-text);
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--realm-radius-btn);
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.settings-nav-button:hover {
+  background: rgba(24, 85, 77, 0.85);
+}
+
+.settings-nav-button.nav-active {
+  background: var(--realm-cyan);
+  border-color: var(--realm-cyan);
+  color: var(--realm-bg);
+  font-weight: 600;
+  box-shadow: var(--realm-cyan-glow);
+}
+
+.settings-nav-button.nav-active:hover {
+  background: var(--realm-cyan);
+  transform: translateY(-1px);
+}
+
 .row-actions button,
 .inline-form button,
 .stack-form button,
@@ -159,7 +263,6 @@ h3,
     border-color 0.2s ease;
 }
 
-.app-header button:hover,
 .row-actions button:hover,
 .inline-form button:hover,
 .stack-form button:hover,
@@ -167,20 +270,22 @@ h3,
 .panel-header button:hover,
 .error-banner button:hover,
 .update-banner button:hover {
-  background: rgba(34, 118, 107, 0.85);
+  background: rgba(24, 85, 77, 0.85);
 }
 
-.app-header button.nav-active {
-  background: var(--realm-cyan);
-  border-color: var(--realm-cyan);
-  color: var(--realm-bg);
-  font-weight: 600;
-  box-shadow: var(--realm-cyan-glow);
-}
+@media (max-width: 720px) {
+  .app-header {
+    grid-template-columns: 1fr;
+  }
 
-.app-header button.nav-active:hover {
-  background: var(--realm-cyan);
-  transform: translateY(-1px);
+  .brand-block,
+  .header-center {
+    justify-self: stretch;
+  }
+
+  .header-center {
+    justify-content: flex-start;
+  }
 }
 
 button.danger {
@@ -203,6 +308,108 @@ button.danger:hover {
   margin-top: 0;
 }
 
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-title-row h1 {
+  margin: 0;
+}
+
+.cream-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--realm-gold);
+  border-radius: var(--realm-radius-btn);
+  background: transparent;
+  color: var(--realm-gold);
+  font-weight: 700;
+  box-shadow: var(--realm-gold-glow);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.cream-button svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.cream-button:hover {
+  background: rgba(231, 222, 149, 0.1);
+  color: #fff6c8;
+  border-color: #fff1b0;
+  box-shadow:
+    0 0 0 1px rgba(231, 222, 149, 0.28),
+    0 0 18px rgba(231, 222, 149, 0.45),
+    0 0 28px rgba(231, 222, 149, 0.2);
+  transform: translateY(-1px);
+}
+
+.cream-button:hover svg {
+  transform: scale(1.08);
+}
+
+.cream-button:disabled {
+  opacity: 0.55;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.cream-button:disabled:hover {
+  background: transparent;
+  color: var(--realm-gold);
+  border-color: var(--realm-gold);
+  box-shadow: var(--realm-gold-glow);
+  transform: none;
+}
+
+.cream-button:disabled:hover svg {
+  transform: none;
+}
+
+.cream-button-icon {
+  width: 2.45rem;
+  height: 2.45rem;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.cream-button-icon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.row-actions .cream-button,
+.inline-form .cream-button,
+.page-title-row .cream-button {
+  background: transparent;
+  border-color: var(--realm-gold);
+  color: var(--realm-gold);
+  box-shadow: var(--realm-gold-glow);
+}
+
+.row-actions .cream-button:hover,
+.inline-form .cream-button:hover,
+.page-title-row .cream-button:hover {
+  background: rgba(231, 222, 149, 0.1);
+  color: #fff6c8;
+  border-color: #fff1b0;
+}
+
 .muted {
   color: var(--realm-text-secondary);
 }
@@ -215,11 +422,103 @@ button.danger:hover {
   background: var(--realm-surface);
 }
 
+.panel.forest-panel {
+  border: none;
+  background: linear-gradient(
+    90deg,
+    var(--realm-alt) 0%,
+    rgba(24, 106, 143, 0.35) 55%,
+    transparent 100%
+  );
+}
+
+.panel.grove-panel {
+  border: none;
+  background: linear-gradient(
+    90deg,
+    var(--realm-surface) 0%,
+    rgba(24, 85, 77, 0.45) 55%,
+    transparent 100%
+  );
+}
+
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.progress-quiz-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(11rem, 0.85fr);
+  align-items: center;
+  gap: 1rem 1.25rem;
+}
+
+.progress-quiz-main {
+  min-width: 0;
+}
+
+.progress-quiz-panel .start-quiz-button {
+  justify-self: center;
+  padding: 0.95rem 1.45rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: var(--realm-radius-btn);
+}
+
+@media (max-width: 640px) {
+  .progress-quiz-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-quiz-panel .start-quiz-button {
+    justify-self: stretch;
+    text-align: center;
+  }
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.progress-quiz-panel .cream-button.start-quiz-button {
+  background: transparent;
+  border-color: var(--realm-gold);
+  color: var(--realm-gold);
+  box-shadow: var(--realm-gold-glow);
+}
+
+.progress-quiz-panel .cream-button.start-quiz-button:hover {
+  background: rgba(231, 222, 149, 0.1);
+  color: #fff6c8;
+  border-color: #fff1b0;
+}
+
+.panel-inline-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--realm-text);
+  line-height: 1.2;
+}
+
+.panel-title-row .cream-button {
+  background: transparent;
+  border-color: var(--realm-gold);
+  color: var(--realm-gold);
+  box-shadow: var(--realm-gold-glow);
+  flex-shrink: 0;
+}
+
+.panel-title-row .cream-button:hover {
+  background: rgba(231, 222, 149, 0.1);
+  color: #fff6c8;
+  border-color: #fff1b0;
 }
 
 .panel-header h2,
@@ -244,6 +543,328 @@ button.danger:hover {
   border-top: 1px solid var(--realm-border);
 }
 
+.forest-panel,
+.grove-panel {
+  position: relative;
+  border: none;
+  border-radius: var(--realm-radius);
+}
+
+.forest-panel {
+  background: linear-gradient(
+    90deg,
+    var(--realm-alt) 0%,
+    rgba(24, 106, 143, 0.35) 55%,
+    transparent 100%
+  );
+}
+
+/* Green alternative to forest-panel (emerald → translucent). */
+.grove-panel {
+  background: linear-gradient(
+    90deg,
+    var(--realm-surface) 0%,
+    rgba(24, 85, 77, 0.45) 55%,
+    transparent 100%
+  );
+}
+
+.forest-panel::before,
+.grove-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    var(--realm-gold) 0%,
+    rgba(231, 222, 149, 0.1) 100%
+  );
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.subjects-page .page-title-row.constellation-root {
+  position: relative;
+  gap: 0.85rem;
+}
+
+.constellation-root-node {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--realm-gold);
+  box-shadow:
+    0 0 0 2px rgba(231, 222, 149, 0.2),
+    0 0 14px rgba(231, 222, 149, 0.55),
+    0 0 24px rgba(231, 222, 149, 0.28);
+  flex-shrink: 0;
+}
+
+.constellation-tree {
+  position: relative;
+  margin-top: 0.35rem;
+  padding-left: 2.1rem;
+}
+
+.constellation-spine {
+  position: absolute;
+  left: 0.38rem;
+  top: -1.15rem;
+  bottom: 1.35rem;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(231, 222, 149, 0.75) 0%,
+    rgba(231, 222, 149, 0.35) 55%,
+    rgba(231, 222, 149, 0.12) 100%
+  );
+  pointer-events: none;
+}
+
+.constellation-dust,
+.constellation-branch-dust {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.constellation-dust {
+  left: -22px;
+  right: -8px;
+  background-image:
+    radial-gradient(circle, rgba(231, 222, 149, 0.95) 0 1.1px, transparent 1.7px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.7) 0 0.9px, transparent 1.5px),
+    radial-gradient(circle, rgba(255, 246, 200, 0.85) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.55) 0 0.8px, transparent 1.3px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.8) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 241, 176, 0.65) 0 0.85px, transparent 1.4px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.5) 0 0.7px, transparent 1.2px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.75) 0 1.05px, transparent 1.65px),
+    radial-gradient(circle, rgba(255, 246, 200, 0.6) 0 0.75px, transparent 1.25px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.45) 0 0.65px, transparent 1.1px),
+    radial-gradient(circle, rgba(231, 222, 149, 0.85) 0 0.95px, transparent 1.5px),
+    radial-gradient(circle, rgba(255, 241, 176, 0.55) 0 0.7px, transparent 1.2px);
+  background-size:
+    10px 10px,
+    8px 8px,
+    11px 11px,
+    7px 7px,
+    9px 9px,
+    8px 8px,
+    6px 6px,
+    10px 10px,
+    7px 7px,
+    6px 6px,
+    9px 9px,
+    5px 5px;
+  background-position:
+    -16px 6%,
+    10px 12%,
+    -6px 19%,
+    -20px 27%,
+    8px 34%,
+    -12px 42%,
+    4px 49%,
+    -18px 57%,
+    12px 64%,
+    -8px 72%,
+    -22px 81%,
+    6px 91%;
+  background-repeat: no-repeat;
+}
+
+.subject-list {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.15rem;
+  list-style: none;
+}
+
+.subject-item {
+  position: relative;
+  list-style: none;
+}
+
+.subject-list .subject-row {
+  position: relative;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  margin: 0;
+  border-top: none;
+}
+
+.constellation-branch {
+  position: absolute;
+  left: -2.1rem;
+  top: 50%;
+  width: 1.55rem;
+  height: 1.4rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+.constellation-branch-line {
+  position: absolute;
+  left: 0.38rem;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(231, 222, 149, 0.55) 0%,
+    rgba(231, 222, 149, 0.2) 100%
+  );
+}
+
+.constellation-branch-dust {
+  /* Wide field left of the branch; stop before the subject card/text. */
+  top: -34px;
+  bottom: -34px;
+  left: -38px;
+  right: 10px;
+  filter: blur(0.35px);
+  opacity: 0.95;
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(255, 246, 200, var(--dust-1-alpha, 0.85)) 0 12%,
+      rgba(231, 222, 149, var(--dust-1-alpha-soft, 0.3)) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      circle,
+      rgba(255, 246, 200, var(--dust-2-alpha, 0.7)) 0 12%,
+      rgba(231, 222, 149, var(--dust-2-alpha-soft, 0.25)) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      circle,
+      rgba(255, 246, 200, var(--dust-3-alpha, 0.55)) 0 12%,
+      rgba(231, 222, 149, var(--dust-3-alpha-soft, 0.2)) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      circle,
+      rgba(255, 246, 200, var(--dust-4-alpha, 0.65)) 0 12%,
+      rgba(231, 222, 149, var(--dust-4-alpha-soft, 0.22)) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      circle,
+      rgba(255, 246, 200, var(--dust-5-alpha, 0.5)) 0 12%,
+      rgba(231, 222, 149, var(--dust-5-alpha-soft, 0.18)) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      circle,
+      rgba(255, 246, 200, var(--dust-6-alpha, 0.45)) 0 12%,
+      rgba(231, 222, 149, var(--dust-6-alpha-soft, 0.16)) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      circle,
+      rgba(255, 246, 200, var(--dust-7-alpha, 0.4)) 0 12%,
+      rgba(231, 222, 149, var(--dust-7-alpha-soft, 0.14)) 42%,
+      transparent 72%
+    );
+  background-size:
+    var(--dust-1-size, 11px) var(--dust-1-size, 11px),
+    var(--dust-2-size, 9px) var(--dust-2-size, 9px),
+    var(--dust-3-size, 8px) var(--dust-3-size, 8px),
+    var(--dust-4-size, 10px) var(--dust-4-size, 10px),
+    var(--dust-5-size, 7px) var(--dust-5-size, 7px),
+    var(--dust-6-size, 12px) var(--dust-6-size, 12px),
+    var(--dust-7-size, 6px) var(--dust-7-size, 6px);
+  background-position:
+    var(--dust-1-pos, 12% 18%),
+    var(--dust-2-pos, 38% 78%),
+    var(--dust-3-pos, 62% 12%),
+    var(--dust-4-pos, 28% 55%),
+    var(--dust-5-pos, 48% 42%),
+    var(--dust-6-pos, 18% 88%),
+    var(--dust-7-pos, 55% 30%);
+  background-repeat: no-repeat;
+}
+
+.constellation-node {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 50%;
+  /* Fully outside the card: sit just left of the border */
+  transform: translate(calc(-100% - 5px), -50%);
+  background: var(--realm-gold);
+  box-shadow:
+    0 0 0 2px rgba(231, 222, 149, 0.18),
+    0 0 12px rgba(231, 222, 149, 0.55),
+    0 0 22px rgba(231, 222, 149, 0.28);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.subject-card:hover .constellation-node,
+.subject-card:focus-visible .constellation-node {
+  box-shadow:
+    0 0 0 2px rgba(255, 241, 176, 0.28),
+    0 0 16px rgba(231, 222, 149, 0.7),
+    0 0 28px rgba(231, 222, 149, 0.35);
+}
+
+.subject-card {
+  cursor: pointer;
+  transform-origin: center center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    filter 0.2s ease;
+}
+
+.subject-card:hover,
+.subject-card:focus-visible {
+  outline: none;
+  transform: scale(1.035);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(24, 106, 143, 0.92) 0%,
+      rgba(24, 106, 143, 0.42) 55%,
+      rgba(231, 222, 149, 0.08) 100%
+    );
+  box-shadow:
+    0 0 0 1px rgba(231, 222, 149, 0.28),
+    0 0 18px rgba(231, 222, 149, 0.45),
+    0 0 28px rgba(231, 222, 149, 0.2);
+}
+
+.subject-card:hover::before,
+.subject-card:focus-visible::before {
+  background: linear-gradient(
+    135deg,
+    #fff1b0 0%,
+    rgba(231, 222, 149, 0.22) 100%
+  );
+}
+
+.subject-card:hover .entity-title,
+.subject-card:focus-visible .entity-title {
+  color: #fff6c8;
+}
+
 .row-actions {
   display: flex;
   gap: 0.5rem;
@@ -261,6 +882,45 @@ button.danger:hover {
 
 .linkish:hover {
   color: var(--realm-text);
+}
+
+.entity-title {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--realm-text);
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  line-height: 1.3;
+  transition: color 0.2s ease;
+}
+
+.row-actions .icon-action {
+  display: inline-grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 1px solid var(--realm-border);
+  border-radius: var(--realm-radius-btn);
+  background: var(--realm-teal);
+  color: var(--realm-text);
+}
+
+.row-actions .icon-action:hover {
+  background: rgba(24, 85, 77, 0.85);
+}
+
+.row-actions .icon-action.danger {
+  border-color: rgba(246, 133, 61, 0.55);
+  background: rgba(113, 31, 71, 0.35);
+  color: var(--realm-error);
+}
+
+.row-actions .icon-action.danger:hover {
+  background: rgba(113, 31, 71, 0.55);
 }
 
 .inline-form,
@@ -290,7 +950,7 @@ button.danger:hover {
   padding: 0.5rem 0.7rem;
   border: 1px solid var(--realm-border);
   border-radius: var(--realm-radius-btn);
-  background: rgba(9, 25, 40, 0.55);
+  background: rgba(4, 13, 22, 0.55);
   color: var(--realm-text);
 }
 
@@ -329,7 +989,7 @@ button.danger:hover {
 .dialog-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(9, 25, 40, 0.72);
+  background: rgba(4, 13, 22, 0.72);
   display: grid;
   place-items: center;
   padding: 1rem;
@@ -390,7 +1050,7 @@ button.danger:hover {
   padding: 0.75rem;
   display: grid;
   gap: 0.75rem;
-  background: rgba(34, 118, 107, 0.25);
+  background: rgba(24, 85, 77, 0.25);
 }
 
 .option-fieldset legend {
@@ -432,5 +1092,5 @@ button.danger:hover {
   padding: 1rem;
   border: 1px solid var(--realm-border);
   border-radius: var(--realm-radius);
-  background: rgba(34, 118, 107, 0.28);
+  background: rgba(24, 85, 77, 0.28);
 }

@@ -26,9 +26,9 @@ export type Route =
 export function routeLabel(route: Route): string {
   switch (route.name) {
     case 'dashboard':
-      return 'Dashboard'
+      return 'Profile'
     case 'subjects':
-      return 'Subjects'
+      return 'Study'
     case 'subject':
       return 'Subject'
     case 'chapter':

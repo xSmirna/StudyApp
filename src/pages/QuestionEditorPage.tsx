@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { CreamButton } from '../components/CreamButton'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { getChapter } from '../db/repositories/chapters'
 import {
@@ -72,13 +73,17 @@ export function QuestionEditorPage({
     }
   }, [subjectId, chapterId, questionId])
 
+  function goBackToChapter() {
+    onNavigate({ name: 'chapter', subjectId, chapterId })
+  }
+
   async function handleSubmit(input: QuestionInput) {
     if (questionId) {
       await updateQuestion(questionId, input)
     } else {
       await createQuestion(input)
     }
-    onNavigate({ name: 'chapter', subjectId, chapterId })
+    goBackToChapter()
   }
 
   if (loading) {
@@ -91,17 +96,31 @@ export function QuestionEditorPage({
 
   return (
     <section className="page">
-      <button
-        type="button"
-        className="linkish"
-        onClick={() => onNavigate({ name: 'chapter', subjectId, chapterId })}
-      >
-        ← Back to chapter
-      </button>
-      <h1>{isEdit ? 'Edit question' : 'New question'}</h1>
-      <p className="muted">
-        Question text and answers support Unicode (including Greek and French).
-      </p>
+      <div className="progress-quiz-row question-editor-header">
+        <CreamButton
+          iconOnly
+          className="progress-back-button"
+          aria-label="Back to chapter"
+          title="Back to chapter"
+          onClick={goBackToChapter}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              fill="currentColor"
+              d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+            />
+          </svg>
+        </CreamButton>
+        <h1 className="panel-inline-title">
+          {isEdit ? 'Edit question' : 'New question'}
+        </h1>
+      </div>
 
       {error ? <ErrorBanner message={error} /> : null}
 
@@ -111,9 +130,7 @@ export function QuestionEditorPage({
           initial={initial ?? undefined}
           submitLabel={isEdit ? 'Save changes' : 'Create question'}
           onSubmit={handleSubmit}
-          onCancel={() =>
-            onNavigate({ name: 'chapter', subjectId, chapterId })
-          }
+          onCancel={goBackToChapter}
         />
       ) : null}
     </section>

@@ -8,6 +8,13 @@ export type QuestionType =
   | 'true_false'
   | 'short_answer'
   | 'long_answer'
+  | 'gap_fill'
+  | 'table_fill'
+
+export type TableFillData = {
+  headers: string[]
+  rows: string[][]
+}
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
@@ -38,6 +45,8 @@ export interface Question {
   referenceAnswer?: string
   explanation?: string
   correctBoolean?: boolean
+  gaps?: string[]
+  table?: TableFillData
   createdAt: IsoDateTime
   updatedAt: IsoDateTime
   archivedAt?: IsoDateTime
@@ -90,6 +99,8 @@ export type QuestionInput = {
   referenceAnswer?: string
   explanation?: string
   correctBoolean?: boolean
+  gaps?: string[]
+  table?: TableFillData
   options?: OptionInput[]
 }
 
@@ -103,12 +114,14 @@ export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   true_false: 'True / False',
   short_answer: 'Short written answer',
   long_answer: 'Long written answer',
+  gap_fill: 'Fill in the gaps',
+  table_fill: 'Fill in the table',
 }
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   easy: 'Easy',
   medium: 'Medium',
-  hard: 'Hard',
+  hard: 'Difficult',
 }
 
 export const ALL_QUESTION_TYPES: QuestionType[] = [
@@ -117,9 +130,15 @@ export const ALL_QUESTION_TYPES: QuestionType[] = [
   'true_false',
   'short_answer',
   'long_answer',
+  'gap_fill',
+  'table_fill',
 ]
 
 export const ALL_DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
+
+export const MAX_GAP_BLANKS = 4
+export const MAX_TABLE_COLUMNS = 4
+export const MAX_TABLE_DATA_ROWS = 10
 
 export function isChoiceType(type: QuestionType): boolean {
   return type === 'single_choice' || type === 'multiple_select'
@@ -127,4 +146,16 @@ export function isChoiceType(type: QuestionType): boolean {
 
 export function isWrittenType(type: QuestionType): boolean {
   return type === 'short_answer' || type === 'long_answer'
+}
+
+export function isGapFillType(type: QuestionType): boolean {
+  return type === 'gap_fill'
+}
+
+export function isTableFillType(type: QuestionType): boolean {
+  return type === 'table_fill'
+}
+
+export function isSelfAssessedType(type: QuestionType): boolean {
+  return isWrittenType(type) || isGapFillType(type) || isTableFillType(type)
 }

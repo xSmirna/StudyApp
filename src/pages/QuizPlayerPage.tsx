@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { ErrorBanner } from '../components/ErrorBanner'
+import {
+  parseGapTemplate,
+  pickBlankTableCells,
+  tableCellKey,
+} from '../domain/structuredQuestions'
 import type {
   AttemptOutcome,
   QuestionAttempt,
@@ -9,7 +14,13 @@ import type {
 } from '../domain/quizTypes'
 import { resolveAttemptOutcome } from '../domain/quizTypes'
 import { isTypingTarget, quizKeyAction } from '../domain/quizKeyboard'
-import { isChoiceType, isWrittenType } from '../domain/types'
+import {
+  isChoiceType,
+  isGapFillType,
+  isSelfAssessedType,
+  isTableFillType,
+  isWrittenType,
+} from '../domain/types'
 import type { Route } from '../navigation'
 import {
   completeQuizSession,
@@ -27,6 +38,33 @@ interface QuizPlayerPageProps {
 
 type VisibleOption = QuizQuestionPayload['options'][number]
 
+function SelfAssessmentFields({
+  value,
+  onChange,
+}: {
+  value: AttemptOutcome | undefined
+  onChange: (value: AttemptOutcome) => void
+}) {
+  return (
+    <fieldset className="option-fieldset">
+      <legend>Self-assessment</legend>
+      {(
+        ['correct', 'partially_correct', 'incorrect'] as AttemptOutcome[]
+      ).map((outcome) => (
+        <label key={outcome}>
+          <input
+            type="radio"
+            name="written-assessment"
+            checked={value === outcome}
+            onChange={() => onChange(outcome)}
+          />{' '}
+          {outcome.replaceAll('_', ' ')}
+        </label>
+      ))}
+    </fieldset>
+  )
+}
+
 export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
   const [session, setSession] = useState<QuizSession | null>(null)
   const [questions, setQuestions] = useState<QuizQuestionPayload[]>([])
@@ -37,6 +75,8 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
   const [writtenAssessment, setWrittenAssessment] = useState<
     AttemptOutcome | undefined
   >()
+  const [gapAnswers, setGapAnswers] = useState<string[]>([])
+  const [tableAnswers, setTableAnswers] = useState<Record<string, string>>({})
   const [revealed, setRevealed] = useState(false)
   const [feedback, setFeedback] = useState<AttemptOutcome | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -53,12 +93,36 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
     if (!question || !isChoiceType(question.type)) {
       return []
     }
-    const order = session?.settings.optionOrders[question.id] ?? question.options.map((o) => o.id)
+    const order =
+      session?.settings.optionOrders[question.id] ??
+      question.options.map((option) => option.id)
     const byId = new Map(question.options.map((option) => [option.id, option]))
     return order
       .map((id) => byId.get(id))
       .filter((option): option is VisibleOption => Boolean(option))
   }, [question, session])
+
+  const gapSegments = useMemo(
+    () => (question && isGapFillType(question.type) ? parseGapTemplate(question.text) : []),
+    [question],
+  )
+
+  const blankCells = useMemo(() => {
+    if (!session || !question || !isTableFillType(question.type) || !question.table) {
+      return []
+    }
+    return pickBlankTableCells({
+      rowCount: question.table.rows.length,
+      colCount: question.table.headers.length,
+      sessionSeed: session.settings.seed,
+      questionId: question.id,
+    })
+  }, [session, question])
+
+  const blankCellKeys = useMemo(
+    () => new Set(blankCells.map((cell) => tableCellKey(cell))),
+    [blankCells],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -92,6 +156,12 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
     setSelectedOptionIds(existing?.selectedOptionIds ?? [])
     setSelectedBoolean(existing?.selectedBoolean)
     setWrittenAssessment(existing?.writtenSelfAssessment)
+    setGapAnswers(
+      isGapFillType(question.type)
+        ? Array.from({ length: question.gaps?.length ?? 0 }, () => '')
+        : [],
+    )
+    setTableAnswers({})
     setFeedback(
       existing && showImmediateFeedback
         ? resolveAttemptOutcome(existing) ?? null
@@ -168,10 +238,12 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
   }): Promise<QuestionAttempt | null> {
     if (!session || !question) return null
 
-    if (isWrittenType(question.type) && showImmediateFeedback) {
+    if (isSelfAssessedType(question.type) && showImmediateFeedback) {
       const assessment = options?.forceWritten ?? writtenAssessment
       if (!assessment) {
-        throw new Error('Mark the written answer as Correct, Partially correct, or Incorrect.')
+        throw new Error(
+          'Mark the answer as Correct, Partially correct, or Incorrect.',
+        )
       }
     }
 
@@ -195,7 +267,7 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
         : undefined,
       selectedBoolean:
         question.type === 'true_false' ? selectedBoolean : undefined,
-      writtenSelfAssessment: isWrittenType(question.type)
+      writtenSelfAssessment: isSelfAssessedType(question.type)
         ? (options?.forceWritten ?? writtenAssessment)
         : undefined,
     })
@@ -220,11 +292,16 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
       }
 
       if (showImmediateFeedback && !feedback) {
-        if (isWrittenType(question.type) && !writtenAssessment) {
-          setRevealed(true)
-          throw new Error(
-            'Reveal the reference if needed, then choose a self-assessment.',
-          )
+        if (isSelfAssessedType(question.type)) {
+          if (!revealed) {
+            setRevealed(true)
+            return
+          }
+          if (!writtenAssessment) {
+            throw new Error(
+              'Choose Correct, Partially correct, or Incorrect.',
+            )
+          }
         }
         const attempt = await saveCurrentAnswer()
         const outcome = attempt ? resolveAttemptOutcome(attempt) : null
@@ -237,7 +314,10 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
         await saveCurrentAnswer()
       }
 
-      if (index < questions.length - 1) {
+      const stopOnIncorrect =
+        Boolean(session.settings.stopOnIncorrect) && feedback === 'incorrect'
+
+      if (!stopOnIncorrect && index < questions.length - 1) {
         const next = index + 1
         setIndex(next)
         await persistProgress(next)
@@ -263,9 +343,9 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
     const latestAttempts = await resumeQuiz(session.id)
     setAttempts(latestAttempts.attempts)
 
-    const pendingWritten = latestAttempts.questions
+    const pendingSelf = latestAttempts.questions
       .map((item, qIndex) => ({ item, qIndex }))
-      .filter(({ item }) => isWrittenType(item.type))
+      .filter(({ item }) => isSelfAssessedType(item.type))
       .filter(({ item }) => {
         const attempt = latestAttempts.attempts.find(
           (entry) => entry.questionId === item.id,
@@ -273,9 +353,9 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
         return !attempt?.writtenSelfAssessment
       })
 
-    if (pendingWritten.length > 0) {
+    if (pendingSelf.length > 0) {
       setExamSelfIndex(0)
-      setIndex(pendingWritten[0]!.qIndex)
+      setIndex(pendingSelf[0]!.qIndex)
       setRevealed(true)
       return
     }
@@ -287,7 +367,7 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
   async function finishExamSelfAssessment() {
     if (!session || !question || examSelfIndex === null) return
     if (!writtenAssessment) {
-      throw new Error('Choose a self-assessment for this written question.')
+      throw new Error('Choose a self-assessment for this question.')
     }
     await saveCurrentAnswer({ forceWritten: writtenAssessment })
 
@@ -295,7 +375,7 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
     setAttempts(refreshed.attempts)
     const stillPending = refreshed.questions
       .map((item, qIndex) => ({ item, qIndex }))
-      .filter(({ item }) => isWrittenType(item.type))
+      .filter(({ item }) => isSelfAssessedType(item.type))
       .filter(({ item }) => {
         const attempt = refreshed.attempts.find(
           (entry) => entry.questionId === item.id,
@@ -364,12 +444,30 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
     )
   }
 
+  const stopOnIncorrect =
+    Boolean(session.settings.stopOnIncorrect) && feedback === 'incorrect'
+
   const primaryLabel = (() => {
-    if (examSelfIndex !== null) return 'Save assessment'
-    if (showImmediateFeedback && !feedback) return 'Submit answer'
+    if (examSelfIndex !== null) return 'Submit evaluation'
+    if (showImmediateFeedback && !feedback) {
+      if (isSelfAssessedType(question.type) && revealed) {
+        return 'Submit evaluation'
+      }
+      return 'Submit answer'
+    }
+    if (stopOnIncorrect) return 'Finish freeplay'
     if (index < questions.length - 1) return 'Next question'
     return isExam ? 'Submit exam' : 'Finish quiz'
   })()
+
+  const showSelfAssessment =
+    isSelfAssessedType(question.type) &&
+    (revealed || examSelfIndex !== null || !showImmediateFeedback)
+
+  const showRevealButton =
+    showImmediateFeedback &&
+    !feedback &&
+    !isSelfAssessedType(question.type)
 
   return (
     <section className="page">
@@ -382,7 +480,11 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
             Question {index + 1} of {questions.length}
           </h1>
         </div>
-        <button type="button" className="danger" onClick={() => setConfirmDiscard(true)}>
+        <button
+          type="button"
+          className="danger"
+          onClick={() => setConfirmDiscard(true)}
+        >
           Discard quiz
         </button>
       </div>
@@ -400,7 +502,8 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
         <p className="muted">
           {question.difficulty} · {question.type.replaceAll('_', ' ')}
         </p>
-        <p>{question.text}</p>
+
+        {!isGapFillType(question.type) ? <p>{question.text}</p> : null}
 
         {isChoiceType(question.type) ? (
           <div className="option-fieldset">
@@ -447,6 +550,100 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
           </div>
         ) : null}
 
+        {isGapFillType(question.type) ? (
+          <div className="stack-form">
+            <div className="gap-fill-prompt" aria-label="Fill in the gaps">
+              {gapSegments.map((segment, segmentIndex) =>
+                segment.kind === 'text' ? (
+                  <span key={`text-${segmentIndex}`}>{segment.value}</span>
+                ) : (
+                  <span key={`gap-${segment.index}`}>
+                    <input
+                      value={gapAnswers[segment.index] ?? ''}
+                      onChange={(event) => {
+                        const next = [...gapAnswers]
+                        next[segment.index] = event.target.value
+                        setGapAnswers(next)
+                      }}
+                      disabled={Boolean(feedback) && showImmediateFeedback}
+                      aria-label={`Blank ${segment.index + 1}`}
+                      placeholder="…"
+                    />
+                    {(revealed || examSelfIndex !== null) &&
+                    question.gaps?.[segment.index] ? (
+                      <span className="muted gap-fill-answer-hint">
+                        Correct: {question.gaps[segment.index]}
+                      </span>
+                    ) : null}
+                  </span>
+                ),
+              )}
+            </div>
+            {showSelfAssessment ? (
+              <SelfAssessmentFields
+                value={writtenAssessment}
+                onChange={setWrittenAssessment}
+              />
+            ) : null}
+          </div>
+        ) : null}
+
+        {isTableFillType(question.type) && question.table ? (
+          <div className="stack-form">
+            <div className="table-fill-scroll">
+              <table className="table-fill-grid">
+                <thead>
+                  <tr>
+                    {question.table.headers.map((header, colIndex) => (
+                      <th key={`h-${colIndex}`}>{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {question.table.rows.map((row, rowIndex) => (
+                    <tr key={`r-${rowIndex}`}>
+                      {row.map((cell, colIndex) => {
+                        const key = tableCellKey({ row: rowIndex, col: colIndex })
+                        const isBlank = blankCellKeys.has(key)
+                        if (!isBlank) {
+                          return <td key={key}>{cell}</td>
+                        }
+                        return (
+                          <td key={key} className="is-blank-cell">
+                            <input
+                              value={tableAnswers[key] ?? ''}
+                              onChange={(event) =>
+                                setTableAnswers((current) => ({
+                                  ...current,
+                                  [key]: event.target.value,
+                                }))
+                              }
+                              disabled={Boolean(feedback) && showImmediateFeedback}
+                              aria-label={`Row ${rowIndex + 1} column ${colIndex + 1}`}
+                              placeholder="…"
+                            />
+                            {(revealed || examSelfIndex !== null) ? (
+                              <span className="table-fill-correct-hint">
+                                Correct: {cell}
+                              </span>
+                            ) : null}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {showSelfAssessment ? (
+              <SelfAssessmentFields
+                value={writtenAssessment}
+                onChange={setWrittenAssessment}
+              />
+            ) : null}
+          </div>
+        ) : null}
+
         {isWrittenType(question.type) ? (
           <div className="stack-form">
             {(revealed || examSelfIndex !== null) && question.referenceAnswer ? (
@@ -454,28 +651,12 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
                 <strong>Reference answer:</strong> {question.referenceAnswer}
               </p>
             ) : null}
-            {(revealed || examSelfIndex !== null || !showImmediateFeedback) && (
-              <fieldset className="option-fieldset">
-                <legend>Self-assessment</legend>
-                {(
-                  [
-                    'correct',
-                    'partially_correct',
-                    'incorrect',
-                  ] as AttemptOutcome[]
-                ).map((value) => (
-                  <label key={value}>
-                    <input
-                      type="radio"
-                      name="written-assessment"
-                      checked={writtenAssessment === value}
-                      onChange={() => setWrittenAssessment(value)}
-                    />{' '}
-                    {value.replaceAll('_', ' ')}
-                  </label>
-                ))}
-              </fieldset>
-            )}
+            {showSelfAssessment ? (
+              <SelfAssessmentFields
+                value={writtenAssessment}
+                onChange={setWrittenAssessment}
+              />
+            ) : null}
           </div>
         ) : null}
 
@@ -486,19 +667,28 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
         ) : null}
 
         {feedback && showImmediateFeedback ? (
-          <p className="success-banner" role="status">
+          <p
+            className={
+              feedback === 'incorrect' ? 'warning-banner' : 'success-banner'
+            }
+            role="status"
+          >
             Result: {feedback.replaceAll('_', ' ')}
           </p>
         ) : null}
       </div>
 
       <div className="row-actions">
-        {showImmediateFeedback && !feedback ? (
+        {showRevealButton ? (
           <button type="button" onClick={() => setRevealed(true)}>
             Reveal answer
           </button>
         ) : null}
-        <button type="button" onClick={() => void handlePrimaryAction()} disabled={saving}>
+        <button
+          type="button"
+          onClick={() => void handlePrimaryAction()}
+          disabled={saving}
+        >
           {saving ? 'Saving…' : primaryLabel}
         </button>
       </div>

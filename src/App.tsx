@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppShell } from './components/AppShell'
 import { ErrorBanner } from './components/ErrorBanner'
 import { UpdateBanner } from './components/UpdateBanner'
 import { ensureDatabaseReady } from './db/database'
-import type { Route } from './navigation'
+import {
+  readRouteFromLocation,
+  routeToHref,
+  routesEqual,
+  type Route,
+} from './navigation'
 import { ChapterDetailPage } from './pages/ChapterDetailPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { HistoryPage } from './pages/HistoryPage'
@@ -19,9 +24,41 @@ import { registerPwaUpdates } from './services/pwaUpdate'
 import { studyTimeTracker } from './services/studyTimeTracker'
 
 export default function App() {
-  const [route, setRoute] = useState<Route>({ name: 'dashboard' })
+  const [route, setRoute] = useState<Route>(() => readRouteFromLocation())
+  const routeRef = useRef(route)
   const [ready, setReady] = useState(false)
   const [bootError, setBootError] = useState<string | null>(null)
+
+  const navigate = useCallback((next: Route, options?: { replace?: boolean }) => {
+    if (routesEqual(routeRef.current, next)) {
+      return
+    }
+
+    const href = routeToHref(next)
+    if (options?.replace) {
+      window.history.replaceState(next, '', href)
+    } else {
+      window.history.pushState(next, '', href)
+    }
+    routeRef.current = next
+    setRoute(next)
+  }, [])
+
+  useEffect(() => {
+    window.history.replaceState(routeRef.current, '', routeToHref(routeRef.current))
+
+    function onPopState(event: PopStateEvent) {
+      const next =
+        event.state && typeof event.state === 'object' && 'name' in event.state
+          ? (event.state as Route)
+          : readRouteFromLocation()
+      routeRef.current = next
+      setRoute(next)
+    }
+
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -70,29 +107,29 @@ export default function App() {
   const quizActive = route.name === 'quiz-player'
 
   return (
-    <AppShell route={route} onNavigate={setRoute}>
+    <AppShell route={route} onNavigate={navigate}>
       <UpdateBanner quizActive={quizActive} />
       {route.name === 'dashboard' ? (
-        <DashboardPage onNavigate={setRoute} />
+        <DashboardPage onNavigate={navigate} />
       ) : null}
       {route.name === 'subjects' ? (
-        <SubjectsPage onNavigate={setRoute} />
+        <SubjectsPage onNavigate={navigate} />
       ) : null}
       {route.name === 'subject' ? (
-        <SubjectDetailPage subjectId={route.subjectId} onNavigate={setRoute} />
+        <SubjectDetailPage subjectId={route.subjectId} onNavigate={navigate} />
       ) : null}
       {route.name === 'chapter' ? (
         <ChapterDetailPage
           subjectId={route.subjectId}
           chapterId={route.chapterId}
-          onNavigate={setRoute}
+          onNavigate={navigate}
         />
       ) : null}
       {route.name === 'question-new' ? (
         <QuestionEditorPage
           subjectId={route.subjectId}
           chapterId={route.chapterId}
-          onNavigate={setRoute}
+          onNavigate={navigate}
         />
       ) : null}
       {route.name === 'question-edit' ? (
@@ -100,7 +137,7 @@ export default function App() {
           subjectId={route.subjectId}
           chapterId={route.chapterId}
           questionId={route.questionId}
-          onNavigate={setRoute}
+          onNavigate={navigate}
         />
       ) : null}
       {route.name === 'quiz-setup' ? (
@@ -108,17 +145,17 @@ export default function App() {
           subjectId={route.subjectId}
           mode={route.mode}
           initialChapterId={route.chapterId}
-          onNavigate={setRoute}
+          onNavigate={navigate}
         />
       ) : null}
       {route.name === 'quiz-player' ? (
-        <QuizPlayerPage sessionId={route.sessionId} onNavigate={setRoute} />
+        <QuizPlayerPage sessionId={route.sessionId} onNavigate={navigate} />
       ) : null}
       {route.name === 'quiz-results' ? (
-        <QuizResultsPage sessionId={route.sessionId} onNavigate={setRoute} />
+        <QuizResultsPage sessionId={route.sessionId} onNavigate={navigate} />
       ) : null}
       {route.name === 'history' ? (
-        <HistoryPage onNavigate={setRoute} />
+        <HistoryPage onNavigate={navigate} />
       ) : null}
       {route.name === 'settings' ? <SettingsPage /> : null}
     </AppShell>

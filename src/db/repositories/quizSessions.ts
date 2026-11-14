@@ -238,6 +238,8 @@ export async function loadQuizQuestions(
       referenceAnswer: question.referenceAnswer,
       explanation: question.explanation,
       correctBoolean: question.correctBoolean,
+      gaps: question.gaps,
+      table: question.table,
       options: options
         .sort((a, b) => a.order - b.order)
         .map((option) => ({

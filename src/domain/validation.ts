@@ -1,4 +1,14 @@
-import type { Difficulty, OptionInput, QuestionInput, QuestionType } from './types'
+import {
+  validateGapFillContent,
+  validateTableFillContent,
+} from './structuredQuestions'
+import type {
+  Difficulty,
+  OptionInput,
+  QuestionInput,
+  QuestionType,
+  TableFillData,
+} from './types'
 import { isChoiceType, isWrittenType } from './types'
 
 export type ValidationResult =
@@ -14,6 +24,8 @@ export type QuestionValidationSuccess = {
     referenceAnswer?: string
     explanation?: string
     correctBoolean?: boolean
+    gaps?: string[]
+    table?: TableFillData
     options: Array<{
       id?: string
       text: string
@@ -38,6 +50,7 @@ const MAX_QUESTION_TEXT_LENGTH = 5000
 const MAX_OPTION_TEXT_LENGTH = 1000
 const MAX_REFERENCE_LENGTH = 5000
 const MAX_EXPLANATION_LENGTH = 5000
+const MAX_GAP_ANSWER_LENGTH = 500
 
 export function validateRequiredName(raw: string): ValidationResult {
   const value = raw.trim()
@@ -143,6 +156,50 @@ export function validateQuestionInput(
         difficulty: input.difficulty,
         referenceAnswer: referenceResult.value || undefined,
         explanation: explanationResult.value || undefined,
+        options: [],
+      },
+    }
+  }
+
+  if (input.type === 'gap_fill') {
+    const gapResult = validateGapFillContent(text, input.gaps)
+    if (!gapResult.ok) {
+      return gapResult
+    }
+    for (const [index, answer] of gapResult.gaps.entries()) {
+      if (answer.length > MAX_GAP_ANSWER_LENGTH) {
+        return {
+          ok: false,
+          error: `Blank ${index + 1} must be ${MAX_GAP_ANSWER_LENGTH} characters or fewer.`,
+        }
+      }
+    }
+    return {
+      ok: true,
+      value: {
+        text,
+        type: input.type,
+        difficulty: input.difficulty,
+        explanation: explanationResult.value || undefined,
+        gaps: gapResult.gaps,
+        options: [],
+      },
+    }
+  }
+
+  if (input.type === 'table_fill') {
+    const tableResult = validateTableFillContent(input.table)
+    if (!tableResult.ok) {
+      return tableResult
+    }
+    return {
+      ok: true,
+      value: {
+        text,
+        type: input.type,
+        difficulty: input.difficulty,
+        explanation: explanationResult.value || undefined,
+        table: tableResult.table,
         options: [],
       },
     }

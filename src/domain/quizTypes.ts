@@ -1,9 +1,13 @@
+import type { LearnLevel } from './learnSelection'
 import type {
   Difficulty,
   EntityId,
   IsoDateTime,
   QuestionType,
+  TableFillData,
 } from './types'
+
+export type { LearnLevel } from './learnSelection'
 
 export type QuizMode =
   | 'learn'
@@ -30,6 +34,8 @@ export type QuizSessionSettings = {
   selectionStrategy?: SelectionStrategy
   timerMinutes?: number
   practiceSourceSessionId?: string
+  learnLevel?: LearnLevel
+  stopOnIncorrect?: boolean
 }
 
 export interface QuizSession {
@@ -82,6 +88,8 @@ export type QuizQuestionPayload = {
   referenceAnswer?: string
   explanation?: string
   correctBoolean?: boolean
+  gaps?: string[]
+  table?: TableFillData
   options: Array<{
     id: EntityId
     text: string

@@ -84,4 +84,38 @@ describe('validateQuestionInput', () => {
       expect(result.value.referenceAnswer).toBe('bonjour')
     }
   })
+
+  it('accepts gap fill with answers', () => {
+    const result = validateQuestionInput({
+      chapterId: 'c1',
+      type: 'gap_fill',
+      text: 'The {{0}} orbits the {{1}}.',
+      difficulty: 'easy',
+      gaps: ['Earth', 'Sun'],
+    })
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value.gaps).toEqual(['Earth', 'Sun'])
+    }
+  })
+
+  it('accepts table fill content', () => {
+    const result = validateQuestionInput({
+      chapterId: 'c1',
+      type: 'table_fill',
+      text: 'Complete the table',
+      difficulty: 'medium',
+      table: {
+        headers: ['Element', 'Symbol'],
+        rows: [
+          ['Hydrogen', 'H'],
+          ['Oxygen', 'O'],
+        ],
+      },
+    })
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value.table?.headers).toEqual(['Element', 'Symbol'])
+    }
+  })
 })

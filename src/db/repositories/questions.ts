@@ -68,6 +68,8 @@ export async function createQuestion(
     referenceAnswer: validated.value.referenceAnswer,
     explanation: validated.value.explanation,
     correctBoolean: validated.value.correctBoolean,
+    gaps: validated.value.gaps,
+    table: validated.value.table,
     createdAt: timestamp,
     updatedAt: timestamp,
   }
@@ -116,6 +118,8 @@ export async function updateQuestion(
     referenceAnswer: validated.value.referenceAnswer,
     explanation: validated.value.explanation,
     correctBoolean: validated.value.correctBoolean,
+    gaps: validated.value.gaps,
+    table: validated.value.table,
     updatedAt: nowIso(),
   }
 
@@ -125,6 +129,12 @@ export async function updateQuestion(
   }
   if (updated.type !== 'short_answer' && updated.type !== 'long_answer') {
     delete updated.referenceAnswer
+  }
+  if (updated.type !== 'gap_fill') {
+    delete updated.gaps
+  }
+  if (updated.type !== 'table_fill') {
+    delete updated.table
   }
 
   const options: Option[] = validated.value.options.map((option, index) => ({

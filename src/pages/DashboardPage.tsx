@@ -15,7 +15,11 @@ import {
   discardQuizSession,
   listInProgressSessions,
 } from '../services/quiz'
-import { getDashboardStats, type SessionSummary } from '../services/statistics'
+import {
+  getDashboardStats,
+  type ProfileProgressStats,
+  type SessionSummary,
+} from '../services/statistics'
 import { toUserMessage } from '../services/errors'
 
 interface DashboardPageProps {
@@ -33,6 +37,8 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
     total: '0s',
   })
   const [completedQuizzes, setCompletedQuizzes] = useState(0)
+  const [profileProgress, setProfileProgress] =
+    useState<ProfileProgressStats | null>(null)
   const [pendingDiscard, setPendingDiscard] = useState<QuizSession | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -49,6 +55,7 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
     setUnlocks(stats.unlocks)
     setStudyLabels(stats.studyTimeLabels)
     setCompletedQuizzes(stats.completedQuizzes)
+    setProfileProgress(stats.profileProgress)
   }
 
   useEffect(() => {
@@ -135,6 +142,32 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
         </div>
       ) : null}
 
+      <div className="panel grove-panel">
+        <h2>Progress overview</h2>
+        <p className="muted">
+          Placeholder profile stats — updated from every completed quiz. We will
+          refine this display later.
+        </p>
+        {loading || !profileProgress ? (
+          <p>Loading…</p>
+        ) : (
+          <ul className="plain-list">
+            <li>
+              Attempted {profileProgress.attemptedQuestions} of{' '}
+              {profileProgress.activeQuestions} active questions
+            </li>
+            <li>Correct attempts: {profileProgress.correctAttempts}</li>
+            <li>
+              Partially correct attempts:{' '}
+              {profileProgress.partiallyCorrectAttempts}
+            </li>
+            <li>Incorrect attempts: {profileProgress.incorrectAttempts}</li>
+            <li>Total attempts: {profileProgress.totalAttempts}</li>
+            <li>Completed quizzes: {completedQuizzes}</li>
+          </ul>
+        )}
+      </div>
+
       <div className="panel">
         <h2>Productive study time</h2>
         <p className="muted">
@@ -149,7 +182,6 @@ export function DashboardPage({ onNavigate }: DashboardPageProps) {
             <li>Today: {studyLabels.today}</li>
             <li>This week: {studyLabels.week}</li>
             <li>Total: {studyLabels.total}</li>
-            <li>Completed quizzes: {completedQuizzes}</li>
           </ul>
         )}
       </div>

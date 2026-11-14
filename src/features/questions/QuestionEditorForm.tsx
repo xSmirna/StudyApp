@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { CreamButton } from '../../components/CreamButton'
 import { createId } from '../../domain/ids'
 import type {
   Difficulty,
@@ -6,6 +7,7 @@ import type {
   QuestionInput,
   QuestionType,
   QuestionWithOptions,
+  TableFillData,
 } from '../../domain/types'
 import {
   ALL_DIFFICULTIES,
@@ -13,8 +15,12 @@ import {
   DIFFICULTY_LABELS,
   QUESTION_TYPE_LABELS,
   isChoiceType,
+  isGapFillType,
+  isTableFillType,
   isWrittenType,
 } from '../../domain/types'
+import { GapFillComposer } from './GapFillComposer'
+import { TableFillEditor, createEmptyTable } from './TableFillEditor'
 
 type DraftOption = OptionInput & { id: string }
 
@@ -54,6 +60,10 @@ export function QuestionEditorForm({
   const [correctBoolean, setCorrectBoolean] = useState<boolean>(
     initial?.correctBoolean ?? true,
   )
+  const [gaps, setGaps] = useState<string[]>(initial?.gaps ?? [])
+  const [table, setTable] = useState<TableFillData>(
+    initial?.table ?? createEmptyTable(),
+  )
   const [options, setOptions] = useState<DraftOption[]>(
     initial?.options?.length
       ? initial.options.map((option, index) => ({
@@ -80,6 +90,12 @@ export function QuestionEditorForm({
           isCorrect: index === (firstCorrect >= 0 ? firstCorrect : 0),
         }))
       })
+    }
+    if (isTableFillType(nextType) && !initial?.table && table.rows.length === 0) {
+      setTable(createEmptyTable())
+    }
+    if (isTableFillType(nextType) && !text.trim()) {
+      setText('Complete the table')
     }
   }
 
@@ -121,21 +137,6 @@ export function QuestionEditorForm({
     })
   }
 
-  function moveOption(id: string, direction: -1 | 1) {
-    setOptions((current) => {
-      const index = current.findIndex((option) => option.id === id)
-      const target = index + direction
-      if (index < 0 || target < 0 || target >= current.length) {
-        return current
-      }
-      const next = [...current]
-      const temp = next[index]!
-      next[index] = next[target]!
-      next[target] = temp
-      return next.map((option, order) => ({ ...option, order }))
-    })
-  }
-
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSaving(true)
@@ -149,6 +150,8 @@ export function QuestionEditorForm({
         referenceAnswer,
         explanation,
         correctBoolean,
+        gaps: isGapFillType(type) ? gaps : undefined,
+        table: isTableFillType(type) ? table : undefined,
         options: isChoiceType(type) ? options : [],
       })
     } catch (err) {
@@ -159,10 +162,14 @@ export function QuestionEditorForm({
   }
 
   return (
-    <form className="stack-form" onSubmit={(event) => void handleSubmit(event)}>
+    <form
+      className="stack-form question-editor-form"
+      onSubmit={(event) => void handleSubmit(event)}
+    >
       <label htmlFor="question-type">Question type</label>
       <select
         id="question-type"
+        className="filter-select"
         value={type}
         onChange={(event) =>
           handleTypeChange(event.target.value as QuestionType)
@@ -175,28 +182,54 @@ export function QuestionEditorForm({
         ))}
       </select>
 
-      <label htmlFor="question-difficulty">Difficulty</label>
-      <select
-        id="question-difficulty"
-        value={difficulty}
-        onChange={(event) =>
-          setDifficulty(event.target.value as Difficulty)
-        }
+      <span className="field-label" id="question-difficulty-label">
+        Difficulty
+      </span>
+      <div
+        className="difficulty-tag-row"
+        role="group"
+        aria-labelledby="question-difficulty-label"
       >
         {ALL_DIFFICULTIES.map((value) => (
-          <option key={value} value={value}>
-            {DIFFICULTY_LABELS[value]}
-          </option>
+          <button
+            key={value}
+            type="button"
+            className={[
+              'difficulty-tag',
+              `difficulty-tag--${value}`,
+              difficulty === value ? 'is-selected' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            aria-pressed={difficulty === value}
+            onClick={() => setDifficulty(value)}
+          >
+            <span className="difficulty-tag-fx" aria-hidden="true" />
+            <span className="difficulty-tag-label">
+              {DIFFICULTY_LABELS[value]}
+            </span>
+          </button>
         ))}
-      </select>
+      </div>
 
-      <label htmlFor="question-text">Question text</label>
-      <textarea
-        id="question-text"
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-        rows={4}
-      />
+      {isGapFillType(type) ? (
+        <GapFillComposer
+          text={text}
+          gaps={gaps}
+          onTextChange={setText}
+          onGapsChange={setGaps}
+        />
+      ) : (
+        <>
+          <label htmlFor="question-text">Question text</label>
+          <textarea
+            id="question-text"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            rows={4}
+          />
+        </>
+      )}
 
       {type === 'true_false' ? (
         <fieldset className="option-fieldset">
@@ -234,6 +267,10 @@ export function QuestionEditorForm({
         </>
       ) : null}
 
+      {isTableFillType(type) ? (
+        <TableFillEditor table={table} onChange={setTable} />
+      ) : null}
+
       {isChoiceType(type) ? (
         <fieldset className="option-fieldset">
           <legend>Options</legend>
@@ -250,7 +287,7 @@ export function QuestionEditorForm({
                 }
                 placeholder={`Option ${index + 1}`}
               />
-              <label>
+              <label className="option-correct">
                 <input
                   type={type === 'single_choice' ? 'radio' : 'checkbox'}
                   name={
@@ -271,28 +308,27 @@ export function QuestionEditorForm({
                 />{' '}
                 Correct
               </label>
-              <button
-                type="button"
-                onClick={() => moveOption(option.id, -1)}
-                disabled={index === 0}
-              >
-                Up
-              </button>
-              <button
-                type="button"
-                onClick={() => moveOption(option.id, 1)}
-                disabled={index === options.length - 1}
-              >
-                Down
-              </button>
-              <button
-                type="button"
-                className="danger"
-                onClick={() => removeOption(option.id)}
+              <CreamButton
+                iconOnly
+                className="option-delete-button"
+                aria-label={`Remove option ${index + 1}`}
+                title="Remove"
                 disabled={options.length <= 2}
+                onClick={() => removeOption(option.id)}
               >
-                Remove
-              </button>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M6 7h12v2H6V7zm2 3h8l-.7 10.05a1 1 0 0 1-1 .95H9.7a1 1 0 0 1-1-.95L9 10zm3-5h2l1 1h4v2H5V6h4l1-1z"
+                  />
+                </svg>
+              </CreamButton>
             </div>
           ))}
           <button type="button" onClick={addOption}>

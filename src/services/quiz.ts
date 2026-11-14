@@ -14,6 +14,10 @@ import {
 import { db } from '../db/database'
 import { NotFoundError, ValidationError } from '../db/errors'
 import { getSubject } from '../db/repositories/subjects'
+import {
+  orderQuestionsForLearn,
+  type LearnLevel,
+} from '../domain/learnSelection'
 import { selectQuestionsForQuiz } from '../domain/questionSelection'
 import type {
   AttemptOutcome,
@@ -40,6 +44,7 @@ export type StartQuizInput = {
   practiceQuestionIds?: string[]
   practiceSourceSessionId?: string
   seed?: number
+  learnLevel?: LearnLevel
 }
 
 export async function startQuiz(input: StartQuizInput): Promise<{
@@ -77,11 +82,13 @@ export async function startQuiz(input: StartQuizInput): Promise<{
       .where('chapterId')
       .equals(selectedChapters[0]!.id)
       .toArray()
-    const active = questions.filter((question) => !question.archivedAt)
-    const ordered =
-      input.selectionStrategy === 'balanced_random'
-        ? shuffleCopy(active, random)
-        : active.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    const level: LearnLevel = input.learnLevel ?? 'beginner'
+    const ordered = orderQuestionsForLearn(
+      questions,
+      level,
+      seed,
+      level === 'freeplay' ? 'all' : input.questionCount,
+    )
     selectedIds = ordered.map((question) => question.id)
   } else {
     const chapterIdSet = new Set(selectedChapters.map((chapter) => chapter.id))
@@ -138,18 +145,24 @@ export async function startQuiz(input: StartQuizInput): Promise<{
     }
   }
 
+  const learnLevel =
+    input.mode === 'learn' ? (input.learnLevel ?? 'beginner') : undefined
+
   const settings: QuizSessionSettings = {
     seed,
     questionIds: questions.map((question) => question.id),
     optionOrders,
     currentIndex: 0,
-    questionCount: input.questionCount,
+    questionCount:
+      learnLevel === 'freeplay' ? 'all' : input.questionCount,
     chapterIds: selectedChapters.map((chapter) => chapter.id),
     types: input.types,
     difficulties: input.difficulties,
     selectionStrategy: input.selectionStrategy,
     timerMinutes: input.timerMinutes,
     practiceSourceSessionId: input.practiceSourceSessionId,
+    learnLevel,
+    stopOnIncorrect: learnLevel === 'freeplay',
   }
 
   const chapterNameSnapshots: Record<string, string> = {}

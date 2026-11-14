@@ -314,7 +314,10 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
         await saveCurrentAnswer()
       }
 
-      if (index < questions.length - 1) {
+      const stopOnIncorrect =
+        Boolean(session.settings.stopOnIncorrect) && feedback === 'incorrect'
+
+      if (!stopOnIncorrect && index < questions.length - 1) {
         const next = index + 1
         setIndex(next)
         await persistProgress(next)
@@ -441,6 +444,9 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
     )
   }
 
+  const stopOnIncorrect =
+    Boolean(session.settings.stopOnIncorrect) && feedback === 'incorrect'
+
   const primaryLabel = (() => {
     if (examSelfIndex !== null) return 'Submit evaluation'
     if (showImmediateFeedback && !feedback) {
@@ -449,6 +455,7 @@ export function QuizPlayerPage({ sessionId, onNavigate }: QuizPlayerPageProps) {
       }
       return 'Submit answer'
     }
+    if (stopOnIncorrect) return 'Finish freeplay'
     if (index < questions.length - 1) return 'Next question'
     return isExam ? 'Submit exam' : 'Finish quiz'
   })()

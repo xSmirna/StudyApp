@@ -9,6 +9,7 @@ import {
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { CreamButton } from '../components/CreamButton'
 import { ErrorBanner } from '../components/ErrorBanner'
+import { ProgressRadarChart } from '../components/ProgressRadarChart'
 import { QuestionEditorDialog } from '../components/QuestionEditorDialog'
 import { getChapter } from '../db/repositories/chapters'
 import {
@@ -361,14 +362,7 @@ export function ChapterDetailPage({
               </div>
               {!progressCollapsed ? (
                 progress ? (
-                  <ul className="plain-list">
-                    <li>
-                      Attempted {progress.attemptedQuestions} of{' '}
-                      {progress.activeQuestions} active questions
-                    </li>
-                    <li>Correct attempt records: {progress.correctAttempts}</li>
-                    <li>Overdue for review: {progress.overdueQuestions}</li>
-                  </ul>
+                  <ProgressRadarChart progress={progress} />
                 ) : (
                   <p className="muted">Loading progress…</p>
                 )

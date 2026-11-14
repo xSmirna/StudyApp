@@ -1374,6 +1374,88 @@ button.danger:hover {
   margin: 0;
 }
 
+.chapter-learn-dialog {
+  width: min(28rem, 100%);
+}
+
+.learn-level-hint {
+  margin: 0.35rem 0 0.85rem;
+}
+
+.field-label.is-disabled {
+  opacity: 0.55;
+}
+
+.learn-count-slider {
+  width: 100%;
+  accent-color: var(--realm-gold);
+}
+
+.learn-count-slider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.learn-count-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+}
+
+.progress-radar {
+  display: grid;
+  place-items: center;
+  margin: 0.35rem 0 0.15rem;
+}
+
+.progress-radar-svg {
+  width: min(100%, 17rem);
+  height: auto;
+  overflow: visible;
+}
+
+.progress-radar-grid {
+  fill: rgba(167, 204, 228, 0.04);
+  stroke: rgba(167, 204, 228, 0.28);
+  stroke-width: 1;
+}
+
+.progress-radar-axis {
+  stroke: rgba(167, 204, 228, 0.28);
+  stroke-width: 1;
+}
+
+.progress-radar-area {
+  fill: rgba(231, 222, 149, 0.22);
+  stroke: none;
+}
+
+.progress-radar-outline {
+  fill: none;
+  stroke: var(--realm-gold);
+  stroke-width: 1.6;
+  filter: drop-shadow(0 0 6px rgba(231, 222, 149, 0.35));
+}
+
+.progress-radar-dot {
+  fill: var(--realm-gold);
+  stroke: rgba(4, 13, 22, 0.55);
+  stroke-width: 1;
+}
+
+.progress-radar-label {
+  fill: var(--realm-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.progress-radar-value {
+  fill: var(--realm-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .question-editor-form .field-label {
   color: inherit;
 }

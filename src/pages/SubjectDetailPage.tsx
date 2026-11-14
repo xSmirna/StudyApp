@@ -6,15 +6,18 @@ import {
   type CSSProperties,
   type FormEvent,
 } from 'react'
+import { ChapterLearnDialog } from '../components/ChapterLearnDialog'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { CreamButton } from '../components/CreamButton'
 import { ErrorBanner } from '../components/ErrorBanner'
+import { ProgressRadarChart } from '../components/ProgressRadarChart'
 import {
   createChapter,
   deleteChapter,
   listChaptersBySubject,
   updateChapter,
 } from '../db/repositories/chapters'
+import { db } from '../db/database'
 import { getSubject } from '../db/repositories/subjects'
 import type { Chapter, Subject } from '../domain/types'
 import type { Route } from '../navigation'
@@ -50,6 +53,10 @@ export function SubjectDetailPage({
   const [editName, setEditName] = useState('')
   const [editDescription, setEditDescription] = useState('')
   const [pendingDelete, setPendingDelete] = useState<Chapter | null>(null)
+  const [learnChapter, setLearnChapter] = useState<Chapter | null>(null)
+  const [questionCounts, setQuestionCounts] = useState<Record<string, number>>(
+    {},
+  )
   const [progress, setProgress] = useState<ProgressStats | null>(null)
   const [progressCollapsed, setProgressCollapsed] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -68,6 +75,19 @@ export function SubjectDetailPage({
     setDustByChapter(next)
   }
 
+  async function loadQuestionCounts(items: Chapter[]) {
+    const counts: Record<string, number> = {}
+    for (const chapter of items) {
+      const questions = await db.questions
+        .where('chapterId')
+        .equals(chapter.id)
+        .toArray()
+      counts[chapter.id] = questions.filter((question) => !question.archivedAt)
+        .length
+    }
+    setQuestionCounts(counts)
+  }
+
   async function refresh() {
     const [nextSubject, nextChapters, nextProgress] = await Promise.all([
       getSubject(subjectId),
@@ -78,6 +98,7 @@ export function SubjectDetailPage({
     setChapters(nextChapters)
     setProgress(nextProgress)
     syncDustPatterns(nextChapters)
+    await loadQuestionCounts(nextChapters)
   }
 
   useEffect(() => {
@@ -95,6 +116,7 @@ export function SubjectDetailPage({
           setChapters(nextChapters)
           setProgress(nextProgress)
           syncDustPatterns(nextChapters)
+          await loadQuestionCounts(nextChapters)
           setError(null)
         }
       } catch (err) {
@@ -317,16 +339,7 @@ export function SubjectDetailPage({
               </div>
               {!progressCollapsed ? (
                 progress ? (
-                  <ul className="plain-list">
-                    <li>
-                      Attempted {progress.attemptedQuestions} of{' '}
-                      {progress.activeQuestions} active questions
-                    </li>
-                    <li>
-                      Correct attempt records: {progress.correctAttempts}
-                    </li>
-                    <li>Overdue for review: {progress.overdueQuestions}</li>
-                  </ul>
+                  <ProgressRadarChart progress={progress} />
                 ) : (
                   <p className="muted">Loading progress…</p>
                 )
@@ -556,6 +569,13 @@ export function SubjectDetailPage({
                           onKeyDown={(event) => event.stopPropagation()}
                         >
                           <CreamButton
+                            aria-label={`Learn ${chapter.name}`}
+                            title="Learn this chapter"
+                            onClick={() => setLearnChapter(chapter)}
+                          >
+                            Learn this chapter
+                          </CreamButton>
+                          <CreamButton
                             iconOnly
                             aria-label={`Edit ${chapter.name}`}
                             title="Edit"
@@ -615,6 +635,19 @@ export function SubjectDetailPage({
           message={`Delete "${pendingDelete.name}"? Its questions and options will also be deleted.`}
           onConfirm={() => void confirmDelete()}
           onCancel={() => setPendingDelete(null)}
+        />
+      ) : null}
+
+      {learnChapter ? (
+        <ChapterLearnDialog
+          subjectId={subjectId}
+          chapter={learnChapter}
+          questionCount={questionCounts[learnChapter.id] ?? 0}
+          onCancel={() => setLearnChapter(null)}
+          onStarted={(sessionId) => {
+            setLearnChapter(null)
+            onNavigate({ name: 'quiz-player', sessionId })
+          }}
         />
       ) : null}
     </section>

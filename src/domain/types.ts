@@ -108,7 +108,7 @@ export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   easy: 'Easy',
   medium: 'Medium',
-  hard: 'Hard',
+  hard: 'Difficult',
 }
 
 export const ALL_QUESTION_TYPES: QuestionType[] = [

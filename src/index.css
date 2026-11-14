@@ -1325,6 +1325,9 @@ button.danger:hover {
 
 .difficulty-tag {
   appearance: none;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border: 1px solid rgba(167, 204, 228, 0.4);
   border-radius: 999px;
   background: rgba(24, 106, 143, 0.22);
@@ -1339,6 +1342,25 @@ button.danger:hover {
     color 0.15s ease;
 }
 
+.difficulty-tag-label {
+  position: relative;
+  z-index: 1;
+}
+
+.difficulty-tag-fx {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.difficulty-tag.is-selected .difficulty-tag-fx {
+  display: block;
+}
+
 .difficulty-tag:hover {
   border-color: rgba(231, 222, 149, 0.45);
   color: #fff6c8;
@@ -1348,7 +1370,499 @@ button.danger:hover {
   border-color: var(--realm-gold);
   background: rgba(231, 222, 149, 0.16);
   color: var(--realm-gold);
-  box-shadow: var(--realm-gold-glow);
+}
+
+/* Easy — thin green grass peaks (flame idea, slower), clipped inside tag */
+.difficulty-tag--easy.is-selected {
+  overflow: hidden;
+  border-color: rgba(147, 212, 30, 0.55);
+  color: #dff7b8;
+  background: rgba(24, 85, 77, 0.42);
+}
+
+.difficulty-tag--easy.is-selected::before,
+.difficulty-tag--easy.is-selected::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(0.25px);
+  transform-origin: 50% 100%;
+}
+
+.difficulty-tag--easy.is-selected::before {
+  bottom: 0;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    rgba(40, 120, 55, 0.42) 0%,
+    rgba(90, 170, 55, 0.32) 40%,
+    rgba(147, 212, 30, 0.16) 75%,
+    transparent 100%
+  );
+  clip-path: polygon(
+    0% 100%,
+    2% 42%,
+    3.5% 100%,
+    5% 22%,
+    6.5% 100%,
+    8% 48%,
+    9.5% 100%,
+    11% 12%,
+    12.5% 100%,
+    14% 38%,
+    15.5% 100%,
+    17% 18%,
+    18.5% 100%,
+    20% 55%,
+    21.5% 100%,
+    23% 8%,
+    24.5% 100%,
+    26% 44%,
+    27.5% 100%,
+    29% 20%,
+    30.5% 100%,
+    32% 60%,
+    33.5% 100%,
+    35% 15%,
+    36.5% 100%,
+    38% 40%,
+    39.5% 100%,
+    41% 10%,
+    42.5% 100%,
+    44% 50%,
+    45.5% 100%,
+    47% 22%,
+    48.5% 100%,
+    50% 6%,
+    51.5% 100%,
+    53% 46%,
+    54.5% 100%,
+    56% 16%,
+    57.5% 100%,
+    59% 58%,
+    60.5% 100%,
+    62% 24%,
+    63.5% 100%,
+    65% 12%,
+    66.5% 100%,
+    68% 42%,
+    69.5% 100%,
+    71% 18%,
+    72.5% 100%,
+    74% 52%,
+    75.5% 100%,
+    77% 9%,
+    78.5% 100%,
+    80% 36%,
+    81.5% 100%,
+    83% 20%,
+    84.5% 100%,
+    86% 48%,
+    87.5% 100%,
+    89% 14%,
+    90.5% 100%,
+    92% 40%,
+    93.5% 100%,
+    95% 22%,
+    96.5% 100%,
+    98% 55%,
+    100% 28%,
+    100% 100%
+  );
+  opacity: 0.72;
+  animation: difficulty-grass-sway 4.6s ease-in-out infinite;
+}
+
+.difficulty-tag--easy.is-selected::after {
+  bottom: 0;
+  height: 85%;
+  background: linear-gradient(
+    to top,
+    rgba(55, 140, 60, 0.3) 0%,
+    rgba(120, 190, 50, 0.2) 50%,
+    transparent 100%
+  );
+  clip-path: polygon(
+    0% 100%,
+    2.5% 55%,
+    4% 100%,
+    6% 18%,
+    7.5% 100%,
+    9.5% 42%,
+    11% 100%,
+    13% 10%,
+    14.5% 100%,
+    16.5% 50%,
+    18% 100%,
+    20% 22%,
+    21.5% 100%,
+    23.5% 60%,
+    25% 100%,
+    27% 14%,
+    28.5% 100%,
+    30.5% 46%,
+    32% 100%,
+    34% 8%,
+    35.5% 100%,
+    37.5% 38%,
+    39% 100%,
+    41% 58%,
+    42.5% 100%,
+    44.5% 16%,
+    46% 100%,
+    48% 44%,
+    49.5% 100%,
+    51.5% 12%,
+    53% 100%,
+    55% 52%,
+    56.5% 100%,
+    58.5% 20%,
+    60% 100%,
+    62% 40%,
+    63.5% 100%,
+    65.5% 9%,
+    67% 100%,
+    69% 48%,
+    70.5% 100%,
+    72.5% 24%,
+    74% 100%,
+    76% 56%,
+    77.5% 100%,
+    79.5% 15%,
+    81% 100%,
+    83% 42%,
+    84.5% 100%,
+    86.5% 18%,
+    88% 100%,
+    90% 50%,
+    91.5% 100%,
+    93.5% 11%,
+    95% 100%,
+    97% 36%,
+    98.5% 100%,
+    100% 25%,
+    100% 100%
+  );
+  opacity: 0.58;
+  animation: difficulty-grass-sway 5.4s ease-in-out infinite reverse;
+}
+
+.difficulty-tag--easy.is-selected .difficulty-tag-fx {
+  inset: auto 0 0 0;
+  height: 70%;
+  overflow: hidden;
+  background: linear-gradient(
+    to top,
+    rgba(70, 150, 55, 0.28) 0%,
+    rgba(147, 212, 30, 0.12) 60%,
+    transparent 100%
+  );
+  clip-path: polygon(
+    0% 100%,
+    3% 40%,
+    5% 100%,
+    8% 15%,
+    10% 100%,
+    13% 48%,
+    15% 100%,
+    18% 10%,
+    20% 100%,
+    23% 42%,
+    25% 100%,
+    28% 20%,
+    30% 100%,
+    33% 55%,
+    35% 100%,
+    38% 12%,
+    40% 100%,
+    43% 45%,
+    45% 100%,
+    48% 8%,
+    50% 100%,
+    53% 38%,
+    55% 100%,
+    58% 18%,
+    60% 100%,
+    63% 50%,
+    65% 100%,
+    68% 14%,
+    70% 100%,
+    73% 42%,
+    75% 100%,
+    78% 22%,
+    80% 100%,
+    83% 48%,
+    85% 100%,
+    88% 10%,
+    90% 100%,
+    93% 40%,
+    95% 100%,
+    98% 20%,
+    100% 100%
+  );
+  filter: blur(0.3px);
+  opacity: 0.55;
+  animation: difficulty-grass-sway 5s ease-in-out infinite;
+  transform-origin: 50% 100%;
+  z-index: 0;
+}
+
+/* Medium — cracked gray ice texture */
+.difficulty-tag--medium.is-selected {
+  border-color: rgba(170, 185, 195, 0.55);
+  color: #e6ecef;
+  background: rgba(70, 82, 92, 0.42);
+}
+
+.difficulty-tag--medium.is-selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url('/textures/ice-medium.png');
+  background-size: 240% 180%;
+  background-position: 0% 40%;
+  filter: grayscale(0.35) contrast(1.25) brightness(1.05);
+  opacity: 0.55;
+  mix-blend-mode: soft-light;
+  animation: difficulty-ice-drift 5.5s ease-in-out infinite alternate;
+}
+
+.difficulty-tag--medium.is-selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      122deg,
+      transparent 0 9px,
+      rgba(210, 220, 230, 0.14) 9px 10px,
+      transparent 10px 19px
+    ),
+    repeating-linear-gradient(
+      48deg,
+      transparent 0 11px,
+      rgba(150, 165, 175, 0.12) 11px 12px,
+      transparent 12px 23px
+    );
+  background-size:
+    180% 100%,
+    200% 100%;
+  background-position:
+    0% 50%,
+    100% 50%;
+  opacity: 0.45;
+  mix-blend-mode: overlay;
+  animation: difficulty-ice-cracks 4.8s linear infinite;
+}
+
+.difficulty-tag--medium.is-selected .difficulty-tag-fx {
+  display: none;
+}
+
+/* Difficult — peaked flame fringe, clipped inside tag */
+.difficulty-tag--hard.is-selected {
+  overflow: hidden;
+  border-color: rgba(246, 133, 61, 0.55);
+  color: #ffe0c2;
+  background: rgba(113, 31, 71, 0.28);
+}
+
+.difficulty-tag--hard.is-selected::before,
+.difficulty-tag--hard.is-selected::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(0.35px);
+}
+
+.difficulty-tag--hard.is-selected::before {
+  bottom: 0;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    rgba(255, 70, 20, 0.32) 0%,
+    rgba(246, 133, 61, 0.24) 38%,
+    rgba(255, 200, 80, 0.12) 72%,
+    transparent 100%
+  );
+  clip-path: polygon(
+    0% 100%,
+    4% 58%,
+    7% 88%,
+    11% 28%,
+    15% 72%,
+    19% 18%,
+    23% 64%,
+    28% 8%,
+    32% 55%,
+    37% 22%,
+    42% 68%,
+    47% 5%,
+    52% 48%,
+    57% 16%,
+    62% 60%,
+    67% 10%,
+    72% 52%,
+    77% 20%,
+    82% 66%,
+    87% 14%,
+    91% 58%,
+    95% 32%,
+    100% 70%,
+    100% 100%
+  );
+  opacity: 0.58;
+  animation: difficulty-flame-peaks 1.35s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+
+.difficulty-tag--hard.is-selected::after {
+  bottom: 0;
+  height: 85%;
+  background: linear-gradient(
+    to top,
+    rgba(255, 110, 30, 0.22) 0%,
+    rgba(255, 170, 50, 0.14) 45%,
+    transparent 100%
+  );
+  clip-path: polygon(
+    0% 100%,
+    6% 70%,
+    10% 40%,
+    14% 78%,
+    20% 25%,
+    26% 62%,
+    33% 15%,
+    40% 70%,
+    47% 30%,
+    54% 8%,
+    60% 58%,
+    67% 22%,
+    74% 65%,
+    81% 18%,
+    88% 55%,
+    94% 35%,
+    100% 72%,
+    100% 100%
+  );
+  opacity: 0.45;
+  animation: difficulty-flame-peaks 1.7s ease-in-out infinite reverse;
+  transform-origin: 50% 100%;
+}
+
+.difficulty-tag--hard.is-selected .difficulty-tag-fx {
+  inset: auto 0 0 0;
+  height: 75%;
+  overflow: hidden;
+  background: linear-gradient(
+    to top,
+    rgba(255, 90, 30, 0.2) 0%,
+    rgba(255, 160, 50, 0.1) 55%,
+    transparent 100%
+  );
+  clip-path: polygon(
+    0% 100%,
+    8% 45%,
+    14% 80%,
+    22% 20%,
+    30% 70%,
+    38% 12%,
+    46% 58%,
+    54% 18%,
+    62% 72%,
+    70% 10%,
+    78% 62%,
+    86% 25%,
+    93% 68%,
+    100% 40%,
+    100% 100%
+  );
+  filter: blur(0.5px);
+  opacity: 0.42;
+  animation: difficulty-flame-peaks 1.55s ease-in-out infinite;
+  transform-origin: 50% 100%;
+  z-index: 0;
+}
+
+@keyframes difficulty-grass-sway {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scaleY(1) skewX(0deg);
+    opacity: 0.62;
+  }
+  35% {
+    transform: translate3d(-1.5%, -2%, 0) scaleY(1.06) skewX(-2deg);
+    opacity: 0.78;
+  }
+  70% {
+    transform: translate3d(1.5%, -1%, 0) scaleY(0.97) skewX(2deg);
+    opacity: 0.55;
+  }
+}
+
+@keyframes difficulty-ice-drift {
+  0% {
+    background-position: 8% 35%;
+  }
+  100% {
+    background-position: 72% 55%;
+  }
+}
+
+@keyframes difficulty-ice-cracks {
+  0% {
+    background-position:
+      0% 50%,
+      100% 50%;
+  }
+  100% {
+    background-position:
+      100% 50%,
+      0% 50%;
+  }
+}
+
+@keyframes difficulty-flame-peaks {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scaleY(1) scaleX(1);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translate3d(-1%, -4%, 0) scaleY(1.14) scaleX(0.98);
+    opacity: 0.68;
+  }
+  55% {
+    transform: translate3d(1.5%, -2%, 0) scaleY(0.94) scaleX(1.03);
+    opacity: 0.42;
+  }
+  80% {
+    transform: translate3d(-0.5%, -5%, 0) scaleY(1.1) scaleX(1.01);
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .difficulty-tag--easy.is-selected::before,
+  .difficulty-tag--easy.is-selected::after,
+  .difficulty-tag--easy.is-selected .difficulty-tag-fx,
+  .difficulty-tag--medium.is-selected::before,
+  .difficulty-tag--medium.is-selected::after,
+  .difficulty-tag--hard.is-selected::before,
+  .difficulty-tag--hard.is-selected::after,
+  .difficulty-tag--hard.is-selected .difficulty-tag-fx {
+    animation: none;
+  }
 }
 
 .option-row .option-correct {

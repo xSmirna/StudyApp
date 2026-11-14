@@ -179,6 +179,7 @@ export function QuestionEditorForm({
             type="button"
             className={[
               'difficulty-tag',
+              `difficulty-tag--${value}`,
               difficulty === value ? 'is-selected' : '',
             ]
               .filter(Boolean)
@@ -186,7 +187,10 @@ export function QuestionEditorForm({
             aria-pressed={difficulty === value}
             onClick={() => setDifficulty(value)}
           >
-            {DIFFICULTY_LABELS[value]}
+            <span className="difficulty-tag-fx" aria-hidden="true" />
+            <span className="difficulty-tag-label">
+              {DIFFICULTY_LABELS[value]}
+            </span>
           </button>
         ))}
       </div>
